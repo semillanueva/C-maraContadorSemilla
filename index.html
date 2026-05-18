@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Grain Cam – Semilla Nueva</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    #app {
+      max-width: 420px;
+      width: 100%;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+    }
+
+    #header h1 {
+      font-size: 17px;
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+
+    #status-badge {
+      font-size: 12px;
+      color: #666;
+      background: #ebebeb;
+      padding: 3px 10px;
+      border-radius: 8px;
+      border: 0.5px solid #ddd;
+    }
+
+    #viewfinder {
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: #1a1a1a;
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+      border: 0.5px solid #ccc;
+    }
+
+    #video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    #canvas { display: none; }
+
+    #overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .corner {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-color: rgba(255,255,255,0.7);
+      border-style: solid;
+    }
+    .corner.tl { top: 16px; left: 16px; border-width: 2px 0 0 2px; border-radius: 3px 0 0 0; }
+    .corner.tr { top: 16px; right: 16px; border-width: 2px 2px 0 0; border-radius: 0 3px 0 0; }
+    .corner.bl { bottom: 16px; left: 16px; border-width: 0 0 2px 2px; border-radius: 0 0 0 3px; }
+    .corner.br { bottom: 16px; right: 16px; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; }
+
+    #flash {
+      position: absolute;
+      inset: 0;
+      background: white;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.05s;
+    }
+
+    #cam-label {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      white-space: nowrap;
+    }
+
+    #no-cam {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: rgba(255,255,255,0.4);
+      font-size: 13px;
+    }
+
+    #no-cam i { font-size: 32px; }
+
+    #session-card {
+      background: #fff;
+      border: 0.5px solid #ddd;
+      border-radius: 14px;
+      padding: 0.75rem 1rem;
+    }
+
+    #session-label {
+      font-size: 11px;
+      color: #999;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    #session-name {
+      font-size: 14px;
+      color: #1a1a1a;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #session-name i { font-size: 15px; color: #888; }
+
+    #controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.25rem 0;
+    }
+
+    #counter-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      min-width: 48px;
+    }
+
+    #count {
+      font-size: 28px;
+      font-weight: 500;
+      color: #1a1a1a;
+      line-height: 1;
+    }
+
+    #count-label {
+      font-size: 11px;
+      color: #888;
+    }
+
+    #shutter {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #aaa;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.1s, background 0.1s;
+    }
+
+    #shutter:active { transform: scale(0.93); background: #f0f0f0; }
+
+    #shutter-inner {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #1a1a1a;
+      opacity: 0.08;
+    }
+
+    #upload-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      min-width: 48px;
+    }
+
+    #upload-btn i { font-size: 24px; color: #888; }
+    #upload-btn span { font-size: 11px; color: #888; }
+
+    #thumb-row {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      min-height: 60px;
+      align-items: center;
+    }
+
+    #thumb-row::-webkit-scrollbar { display: none; }
+
+    .thumb-wrap { position: relative; flex-shrink: 0; }
+
+    .thumb {
+      width: 52px;
+      height: 52px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 0.5px solid #ddd;
+      display: block;
+    }
+
+    .status-dot {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1.5px solid #fff;
+    }
+
+    .dot-uploading { background: #EF9F27; }
+    .dot-done { background: #639922; }
+
+    #empty-thumbs {
+      font-size: 12px;
+      color: #bbb;
+      width: 100%;
+      text-align: center;
+    }
+
+    #drive-status {
+      background: #f0f0eb;
+      border-radius: 8px;
+      padding: 0.6rem 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #666;
+      border: 0.5px solid #ddd;
+    }
+
+    #drive-status i { font-size: 16px; }
+
+    #config-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0.6rem;
+      font-size: 13px;
+      color: #666;
+      background: none;
+      border: 0.5px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #config-btn:hover { background: #f0f0eb; }
+
+    #config-panel {
+      display: none;
+      background: #fff;
+      border: 0.5px solid #ddd;
+      border-radius: 14px;
+      padding: 1rem;
+      gap: 12px;
+      flex-direction: column;
+    }
+
+    #config-panel.open { display: flex; }
+
+    .config-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .config-row label {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .config-row input,
+    .config-row select {
+      font-size: 13px;
+      padding: 8px 10px;
+      border: 0.5px solid #ccc;
+      border-radius: 8px;
+      width: 100%;
+      background: #fafafa;
+      color: #1a1a1a;
+    }
+
+    .config-row input:focus,
+    .config-row select:focus {
+      outline: none;
+      border-color: #888;
+    }
+
+    .note {
+      font-size: 12px;
+      color: #aaa;
+      padding: 0.5rem 0;
+      border-top: 0.5px solid #eee;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+
+  <div id="header">
+    <h1><i class="ti ti-wheat" aria-hidden="true" style="font-size:18px; margin-right:6px; vertical-align:-2px;"></i>Grain Cam</h1>
+    <span id="status-badge">Configurando...</span>
+  </div>
+
+  <div id="viewfinder">
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+    <div id="overlay">
+      <div class="corner tl"></div>
+      <div class="corner tr"></div>
+      <div class="corner bl"></div>
+      <div class="corner br"></div>
+    </div>
+    <div id="flash"></div>
+    <div id="no-cam">
+      <i class="ti ti-camera-off" aria-hidden="true"></i>
+      <span>Presiona el botón para activar la cámara</span>
+    </div>
+    <div id="cam-label">Semilla Nueva · Grain Analyzer</div>
+  </div>
+
+  <div id="session-card">
+    <div id="session-label">Sesión activa</div>
+    <div id="session-name">
+      <i class="ti ti-folder" aria-hidden="true"></i>
+      <span id="session-text">Muestra_001</span>
+    </div>
+  </div>
+
+  <div id="controls">
+    <div id="counter-wrap">
+      <span id="count">0</span>
+      <span id="count-label">fotos</span>
+    </div>
+
+    <button id="shutter" aria-label="Tomar foto">
+      <div id="shutter-inner"></div>
+    </button>
+
+    <button id="upload-btn" aria-label="Subir foto desde galería">
+      <i class="ti ti-photo-up" aria-hidden="true"></i>
+      <span>Galería</span>
+      <input type="file" id="file-input" accept="image/*" style="display:none">
+    </button>
+  </div>
+
+  <div id="thumb-row">
+    <div id="empty-thumbs">Las fotos tomadas aparecerán aquí</div>
+  </div>
+
+  <div id="drive-status">
+    <i class="ti ti-cloud" aria-hidden="true"></i>
+    <span id="drive-text">Conecta Google Drive para sincronización automática</span>
+  </div>
+
+  <button id="config-btn" onclick="toggleConfig()">
+    <i class="ti ti-settings" aria-hidden="true"></i>
+    Configuración de sesión
+  </button>
+
+  <div id="config-panel">
+    <div class="config-row">
+      <label>Nombre de sesión / muestra</label>
+      <input type="text" id="cfg-session" value="Muestra_001" oninput="updateSession()">
+    </div>
+    <div class="config-row">
+      <label>Carpeta de Drive (nombre)</label>
+      <input type="text" id="cfg-folder" value="GrainAnalyzer_Fotos" placeholder="Nombre de carpeta en Drive">
+    </div>
+    <div class="config-row">
+      <label>Resolución de captura</label>
+      <select id="cfg-res">
+        <option value="high" selected>Alta (recomendada para análisis)</option>
+        <option value="medium">Media</option>
+      </select>
+    </div>
+    <p class="note">La integración con Google Drive se configura en el siguiente paso con la API de Google.</p>
+  </div>
+
+</div>
+
+<script>
+  let photoCount = 0;
+  let stream = null;
+  let camActive = false;
+
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  const shutter = document.getElementById('shutter');
+  const noCam = document.getElementById('no-cam');
+  const countEl = document.getElementById('count');
+  const thumbRow = document.getElementById('thumb-row');
+  const flash = document.getElementById('flash');
+  const badge = document.getElementById('status-badge');
+  const driveText = document.getElementById('drive-text');
+
+  async function startCamera() {
+    try {
+      const constraints = {
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 3840 },
+          height: { ideal: 2160 }
+        }
+      };
+      stream = await navigator.mediaDevices.getUserMedia(constraints);
+      video.srcObject = stream;
+      noCam.style.display = 'none';
+      camActive = true;
+      badge.textContent = 'Cámara activa';
+    } catch (e) {
+      noCam.innerHTML = '<i class="ti ti-camera-off"></i><span>Activa los permisos de cámara en tu navegador</span>';
+      badge.textContent = 'Sin permiso';
+    }
+  }
+
+  shutter.addEventListener('click', async () => {
+    if (!camActive) {
+      await startCamera();
+      return;
+    }
+    takePhoto();
+  });
+
+  function takePhoto() {
+    const w = video.videoWidth;
+    const h = video.videoHeight;
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, w, h);
+
+    flash.style.opacity = '0.9';
+    setTimeout(() => { flash.style.opacity = '0'; }, 120);
+
+    photoCount++;
+    countEl.textContent = photoCount;
+
+    const sessionName = document.getElementById('cfg-session').value || 'Muestra_001';
+    const filename = `${sessionName}_${String(photoCount).padStart(3, '0')}.jpg`;
+
+    canvas.toBlob(blob => {
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+      addThumb(dataUrl, filename, blob);
+      // TODO: aquí va la llamada a Google Drive API para subir el blob
+    }, 'image/jpeg', 0.92);
+  }
+
+  function addThumb(dataUrl, filename, blob) {
+    const emptyEl = document.getElementById('empty-thumbs');
+    if (emptyEl) emptyEl.remove();
+
+    const wrap = document.createElement('div');
+    wrap.className = 'thumb-wrap';
+
+    const img = document.createElement('img');
+    img.src = dataUrl;
+    img.className = 'thumb';
+    img.alt = filename;
+    img.title = filename;
+
+    const dot = document.createElement('div');
+    dot.className = 'status-dot dot-uploading';
+
+    wrap.appendChild(img);
+    wrap.appendChild(dot);
+    thumbRow.appendChild(wrap);
+    thumbRow.scrollLeft = thumbRow.scrollWidth;
+
+    simulateUpload(dot, filename);
+  }
+
+  function simulateUpload(dot, filename) {
+    driveText.textContent = `Subiendo ${filename}...`;
+    setTimeout(() => {
+      dot.className = 'status-dot dot-done';
+      driveText.textContent = `${filename} guardada en Drive`;
+    }, 1800);
+  }
+
+  document.getElementById('upload-btn').addEventListener('click', () => {
+    document.getElementById('file-input').click();
+  });
+
+  document.getElementById('file-input').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!camActive) badge.textContent = 'Galería';
+    const reader = new FileReader();
+    reader.onload = ev => {
+      photoCount++;
+      countEl.textContent = photoCount;
+      const sessionName = document.getElementById('cfg-session').value || 'Muestra_001';
+      const filename = `${sessionName}_${String(photoCount).padStart(3, '0')}.jpg`;
+      addThumb(ev.target.result, filename, null);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  });
+
+  function toggleConfig() {
+    const panel = document.getElementById('config-panel');
+    panel.classList.toggle('open');
+  }
+
+  function updateSession() {
+    const val = document.getElementById('cfg-session').value || 'Muestra_001';
+    document.getElementById('session-text').textContent = val;
+  }
+
+  startCamera();
+</script>
+
+</body>
+</html>
