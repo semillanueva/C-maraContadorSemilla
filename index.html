@@ -65,11 +65,7 @@
 
     #canvas { display: none; }
 
-    #overlay {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-    }
+    #overlay { position: absolute; inset: 0; pointer-events: none; }
 
     .corner {
       position: absolute;
@@ -164,10 +160,7 @@
       line-height: 1;
     }
 
-    #count-label {
-      font-size: 11px;
-      color: #888;
-    }
+    #count-label { font-size: 11px; color: #888; }
 
     #shutter {
       width: 72px;
@@ -183,6 +176,7 @@
     }
 
     #shutter:active { transform: scale(0.93); background: #f0f0f0; }
+    #shutter.disabled { opacity: 0.4; pointer-events: none; }
 
     #shutter-inner {
       width: 56px;
@@ -241,6 +235,7 @@
 
     .dot-uploading { background: #EF9F27; }
     .dot-done { background: #639922; }
+    .dot-error { background: #E24B4A; }
 
     #empty-thumbs {
       font-size: 12px;
@@ -259,9 +254,13 @@
       font-size: 13px;
       color: #666;
       border: 0.5px solid #ddd;
+      min-height: 40px;
     }
 
-    #drive-status i { font-size: 16px; }
+    #drive-status i { font-size: 16px; flex-shrink: 0; }
+    #drive-status.uploading { border-color: #EF9F27; color: #854F0B; background: #FAEEDA; }
+    #drive-status.success { border-color: #639922; color: #3B6D11; background: #EAF3DE; }
+    #drive-status.error { border-color: #E24B4A; color: #A32D2D; background: #FCEBEB; }
 
     #config-btn {
       width: 100%;
@@ -292,19 +291,11 @@
 
     #config-panel.open { display: flex; }
 
-    .config-row {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
+    .config-row { display: flex; flex-direction: column; gap: 4px; }
 
-    .config-row label {
-      font-size: 12px;
-      color: #888;
-    }
+    .config-row label { font-size: 12px; color: #888; }
 
-    .config-row input,
-    .config-row select {
+    .config-row input, .config-row select {
       font-size: 13px;
       padding: 8px 10px;
       border: 0.5px solid #ccc;
@@ -314,8 +305,7 @@
       color: #1a1a1a;
     }
 
-    .config-row input:focus,
-    .config-row select:focus {
+    .config-row input:focus, .config-row select:focus {
       outline: none;
       border-color: #888;
     }
@@ -325,6 +315,13 @@
       color: #aaa;
       padding: 0.5rem 0;
       border-top: 0.5px solid #eee;
+      line-height: 1.5;
+    }
+
+    #queue-info {
+      font-size: 11px;
+      color: #aaa;
+      text-align: center;
     }
   </style>
 </head>
@@ -334,7 +331,7 @@
 
   <div id="header">
     <h1><i class="ti ti-wheat" aria-hidden="true" style="font-size:18px; margin-right:6px; vertical-align:-2px;"></i>Grain Cam</h1>
-    <span id="status-badge">Configurando...</span>
+    <span id="status-badge">Iniciando...</span>
   </div>
 
   <div id="viewfinder">
@@ -385,7 +382,11 @@
 
   <div id="drive-status">
     <i class="ti ti-cloud" aria-hidden="true"></i>
-    <span id="drive-text">Conecta Google Drive para sincronización automática</span>
+    <span id="drive-text">Listo para subir fotos a Drive</span>
+  </div>
+
+  <div id="queue-info" style="display:none">
+    <span id="queue-text"></span>
   </div>
 
   <button id="config-btn" onclick="toggleConfig()">
@@ -399,43 +400,52 @@
       <input type="text" id="cfg-session" value="Muestra_001" oninput="updateSession()">
     </div>
     <div class="config-row">
-      <label>Carpeta de Drive (nombre)</label>
-      <input type="text" id="cfg-folder" value="GrainAnalyzer_Fotos" placeholder="Nombre de carpeta en Drive">
-    </div>
-    <div class="config-row">
       <label>Resolución de captura</label>
       <select id="cfg-res">
         <option value="high" selected>Alta (recomendada para análisis)</option>
         <option value="medium">Media</option>
       </select>
     </div>
-    <p class="note">La integración con Google Drive se configura en el siguiente paso con la API de Google.</p>
+    <p class="note">Las fotos se guardan en Google Drive → GrainAnalyzer_Fotos → [nombre de sesión]</p>
   </div>
 
 </div>
 
 <script>
+  // ── Configuración ──────────────────────────────────────────
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwQg0UQGoWjXtsFUMFtOnbtAWnG6ZmJa06ru-1_CxU7pYsWWObbZ2GmLeiUHQjkTL8Yaw/exec";
+
+  // ── Estado ─────────────────────────────────────────────────
   let photoCount = 0;
   let stream = null;
   let camActive = false;
+  let uploadQueue = [];
+  let isUploading = false;
 
-  const video = document.getElementById('video');
-  const canvas = document.getElementById('canvas');
-  const shutter = document.getElementById('shutter');
-  const noCam = document.getElementById('no-cam');
-  const countEl = document.getElementById('count');
-  const thumbRow = document.getElementById('thumb-row');
-  const flash = document.getElementById('flash');
-  const badge = document.getElementById('status-badge');
-  const driveText = document.getElementById('drive-text');
+  // ── Elementos ──────────────────────────────────────────────
+  const video      = document.getElementById('video');
+  const canvas     = document.getElementById('canvas');
+  const shutter    = document.getElementById('shutter');
+  const noCam      = document.getElementById('no-cam');
+  const countEl    = document.getElementById('count');
+  const thumbRow   = document.getElementById('thumb-row');
+  const flash      = document.getElementById('flash');
+  const badge      = document.getElementById('status-badge');
+  const driveBox   = document.getElementById('drive-status');
+  const driveText  = document.getElementById('drive-text');
+  const driveIcon  = driveBox.querySelector('i');
+  const queueInfo  = document.getElementById('queue-info');
+  const queueText  = document.getElementById('queue-text');
 
+  // ── Cámara ─────────────────────────────────────────────────
   async function startCamera() {
     try {
+      const res = document.getElementById('cfg-res').value;
       const constraints = {
         video: {
           facingMode: 'environment',
-          width: { ideal: 3840 },
-          height: { ideal: 2160 }
+          width:  { ideal: res === 'high' ? 3840 : 1920 },
+          height: { ideal: res === 'high' ? 2160 : 1080 }
         }
       };
       stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -444,16 +454,13 @@
       camActive = true;
       badge.textContent = 'Cámara activa';
     } catch (e) {
-      noCam.innerHTML = '<i class="ti ti-camera-off"></i><span>Activa los permisos de cámara en tu navegador</span>';
+      noCam.innerHTML = '<i class="ti ti-camera-off"></i><span>Activa los permisos de cámara</span>';
       badge.textContent = 'Sin permiso';
     }
   }
 
   shutter.addEventListener('click', async () => {
-    if (!camActive) {
-      await startCamera();
-      return;
-    }
+    if (!camActive) { await startCamera(); return; }
     takePhoto();
   });
 
@@ -462,8 +469,7 @@
     const h = video.videoHeight;
     canvas.width = w;
     canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, w, h);
+    canvas.getContext('2d').drawImage(video, 0, 0, w, h);
 
     flash.style.opacity = '0.9';
     setTimeout(() => { flash.style.opacity = '0'; }, 120);
@@ -471,22 +477,22 @@
     photoCount++;
     countEl.textContent = photoCount;
 
-    const sessionName = document.getElementById('cfg-session').value || 'Muestra_001';
-    const filename = `${sessionName}_${String(photoCount).padStart(3, '0')}.jpg`;
+    const session  = document.getElementById('cfg-session').value || 'Muestra_001';
+    const filename = `${session}_${String(photoCount).padStart(3, '0')}.jpg`;
+    const dataUrl  = canvas.toDataURL('image/jpeg', 0.92);
 
-    canvas.toBlob(blob => {
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-      addThumb(dataUrl, filename, blob);
-      // TODO: aquí va la llamada a Google Drive API para subir el blob
-    }, 'image/jpeg', 0.92);
+    addThumb(dataUrl, filename);
+    enqueueUpload(dataUrl, filename, session);
   }
 
-  function addThumb(dataUrl, filename, blob) {
+  // ── Miniaturas ─────────────────────────────────────────────
+  function addThumb(dataUrl, filename) {
     const emptyEl = document.getElementById('empty-thumbs');
     if (emptyEl) emptyEl.remove();
 
     const wrap = document.createElement('div');
     wrap.className = 'thumb-wrap';
+    wrap.id = 'wrap-' + filename;
 
     const img = document.createElement('img');
     img.src = dataUrl;
@@ -496,23 +502,86 @@
 
     const dot = document.createElement('div');
     dot.className = 'status-dot dot-uploading';
+    dot.id = 'dot-' + filename;
 
     wrap.appendChild(img);
     wrap.appendChild(dot);
     thumbRow.appendChild(wrap);
     thumbRow.scrollLeft = thumbRow.scrollWidth;
-
-    simulateUpload(dot, filename);
   }
 
-  function simulateUpload(dot, filename) {
-    driveText.textContent = `Subiendo ${filename}...`;
-    setTimeout(() => {
-      dot.className = 'status-dot dot-done';
-      driveText.textContent = `${filename} guardada en Drive`;
-    }, 1800);
+  function setDotStatus(filename, status) {
+    const dot = document.getElementById('dot-' + filename);
+    if (!dot) return;
+    dot.className = 'status-dot ' + (status === 'done' ? 'dot-done' : 'dot-error');
   }
 
+  // ── Cola de subida ─────────────────────────────────────────
+  function enqueueUpload(dataUrl, filename, session) {
+    uploadQueue.push({ dataUrl, filename, session });
+    updateQueueInfo();
+    if (!isUploading) processQueue();
+  }
+
+  async function processQueue() {
+    if (uploadQueue.length === 0) {
+      isUploading = false;
+      updateQueueInfo();
+      return;
+    }
+
+    isUploading = true;
+    const item = uploadQueue[0];
+
+    setDriveStatus('uploading', `<i class="ti ti-cloud-upload"></i> Subiendo ${item.filename}...`);
+
+    try {
+      const response = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          image:    item.dataUrl,
+          filename: item.filename,
+          session:  item.session
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setDotStatus(item.filename, 'done');
+        setDriveStatus('success', `<i class="ti ti-circle-check"></i> ${item.filename} guardada en Drive`);
+      } else {
+        throw new Error(result.error || 'Error desconocido');
+      }
+
+    } catch (err) {
+      setDotStatus(item.filename, 'error');
+      setDriveStatus('error', `<i class="ti ti-alert-circle"></i> Error al subir ${item.filename} — se reintentará`);
+      // Reintentar al final de la cola
+      uploadQueue.push(item);
+    }
+
+    uploadQueue.shift();
+    updateQueueInfo();
+    setTimeout(processQueue, 500);
+  }
+
+  function setDriveStatus(type, html) {
+    driveBox.className = '';
+    if (type) driveBox.classList.add(type);
+    driveBox.innerHTML = html;
+  }
+
+  function updateQueueInfo() {
+    if (uploadQueue.length > 1) {
+      queueInfo.style.display = 'block';
+      queueText.textContent = `${uploadQueue.length} fotos en cola`;
+    } else {
+      queueInfo.style.display = 'none';
+    }
+  }
+
+  // ── Galería ────────────────────────────────────────────────
   document.getElementById('upload-btn').addEventListener('click', () => {
     document.getElementById('file-input').click();
   });
@@ -520,22 +589,22 @@
   document.getElementById('file-input').addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
-    if (!camActive) badge.textContent = 'Galería';
     const reader = new FileReader();
     reader.onload = ev => {
       photoCount++;
       countEl.textContent = photoCount;
-      const sessionName = document.getElementById('cfg-session').value || 'Muestra_001';
-      const filename = `${sessionName}_${String(photoCount).padStart(3, '0')}.jpg`;
-      addThumb(ev.target.result, filename, null);
+      const session  = document.getElementById('cfg-session').value || 'Muestra_001';
+      const filename = `${session}_${String(photoCount).padStart(3, '0')}.jpg`;
+      addThumb(ev.target.result, filename);
+      enqueueUpload(ev.target.result, filename, session);
     };
     reader.readAsDataURL(file);
     e.target.value = '';
   });
 
+  // ── Config ─────────────────────────────────────────────────
   function toggleConfig() {
-    const panel = document.getElementById('config-panel');
-    panel.classList.toggle('open');
+    document.getElementById('config-panel').classList.toggle('open');
   }
 
   function updateSession() {
@@ -543,6 +612,7 @@
     document.getElementById('session-text').textContent = val;
   }
 
+  // ── Inicio ─────────────────────────────────────────────────
   startCamera();
 </script>
 
