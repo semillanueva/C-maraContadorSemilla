@@ -41,7 +41,6 @@
       overflow: hidden; position: relative;
       border: 0.5px solid #ccc;
     }
-    /* El video real queda oculto, el canvas muestra el stream filtrado */
     #video { display: none; }
     #preview {
       width: 100%; height: 100%;
@@ -55,6 +54,79 @@
     .corner.tr { top:16px; right:16px; border-width:2px 2px 0 0; border-radius:0 3px 0 0; }
     .corner.bl { bottom:16px; left:16px; border-width:0 0 2px 2px; border-radius:0 0 0 3px; }
     .corner.br { bottom:16px; right:16px; border-width:0 2px 2px 0; border-radius:0 0 3px 0; }
+
+    /* ── Semáforo de exposición ── */
+    #exposure-meter {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .traffic-light {
+      width: 22px;
+      background: rgba(0,0,0,0.55);
+      border-radius: 12px;
+      padding: 5px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      border: 0.5px solid rgba(255,255,255,0.15);
+    }
+    .tl-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      transition: opacity 0.25s, box-shadow 0.25s;
+    }
+    .tl-dot.red    { background: #E24B4A; }
+    .tl-dot.yellow { background: #EF9F27; }
+    .tl-dot.green  { background: #639922; }
+    .tl-dot.inactive { opacity: 0.18; }
+    .tl-dot.active  { opacity: 1; box-shadow: 0 0 6px currentColor; }
+
+    #exposure-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: #fff;
+      background: rgba(0,0,0,0.55);
+      padding: 2px 6px;
+      border-radius: 5px;
+      white-space: nowrap;
+      border: 0.5px solid rgba(255,255,255,0.15);
+    }
+
+    /* ── Aviso de alerta en overlay ── */
+    #exposure-alert {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      text-align: center;
+      display: none;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    #exposure-alert.show { display: block; }
+    #exposure-alert.alert-dark {
+      background: rgba(0, 0, 0, 0.72);
+      color: #EF9F27;
+    }
+    #exposure-alert.alert-over {
+      background: rgba(226, 75, 74, 0.72);
+      color: #fff;
+    }
+    #exposure-alert.alert-ok {
+      background: rgba(99, 153, 34, 0.55);
+      color: #fff;
+    }
 
     #flash {
       position: absolute; inset: 0; background: white;
@@ -104,6 +176,39 @@
       width: 34px; text-align: right; flex-shrink: 0;
     }
 
+    /* ── Indicador de calidad de imagen ── */
+    #quality-indicator {
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 0.5px solid transparent;
+      transition: background 0.3s, border-color 0.3s, color 0.3s;
+    }
+    #quality-indicator.q-good {
+      background: #EAF3DE; color: #3B6D11; border-color: #C0DD97;
+    }
+    #quality-indicator.q-warn {
+      background: #FAEEDA; color: #854F0B; border-color: #FAC775;
+    }
+    #quality-indicator.q-bad {
+      background: #FCEBEB; color: #A32D2D; border-color: #F7C1C1;
+    }
+    #quality-indicator.q-idle {
+      background: #f0f0eb; color: #888; border-color: #ddd;
+    }
+    #quality-indicator i {
+      font-size: 18px; flex-shrink: 0;
+    }
+    #quality-details {
+      display: flex; flex-direction: column; gap: 1px;
+    }
+    #quality-title { font-weight: 600; font-size: 13px; }
+    #quality-hint  { font-size: 11px; opacity: 0.8; }
+
     /* ── Histograma mini ── */
     #histogram-wrap {
       display: flex; flex-direction: column; gap: 4px;
@@ -149,6 +254,11 @@
     #shutter:active { transform: scale(0.93); background: #f0f0f0; }
     #shutter-inner { width: 56px; height: 56px; border-radius: 50%; background: #1a1a1a; opacity: 0.08; }
 
+    /* Shutter con color de semáforo */
+    #shutter.shutter-warn  { border-color: #EF9F27; }
+    #shutter.shutter-bad   { border-color: #E24B4A; }
+    #shutter.shutter-good  { border-color: #639922; }
+
     #upload-btn {
       display: flex; flex-direction: column; align-items: center;
       gap: 3px; cursor: pointer; background: none;
@@ -165,6 +275,19 @@
     #thumb-row::-webkit-scrollbar { display: none; }
     .thumb-wrap { position: relative; flex-shrink: 0; }
     .thumb { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; border: 0.5px solid #ddd; display: block; }
+
+    /* Badge de calidad en miniatura */
+    .thumb-quality-badge {
+      position: absolute;
+      top: 3px; left: 3px;
+      font-size: 9px; font-weight: 700;
+      padding: 1px 5px; border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+    .tqb-ok   { background: rgba(99,153,34,0.85);  color: #fff; }
+    .tqb-warn { background: rgba(239,159,39,0.85); color: #fff; }
+    .tqb-bad  { background: rgba(226,75,74,0.85);  color: #fff; }
+
     .status-dot { position: absolute; bottom: 4px; right: 4px; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #fff; }
     .dot-uploading { background: #EF9F27; }
     .dot-done      { background: #639922; }
@@ -210,14 +333,27 @@
 
   <div id="viewfinder">
     <video id="video" autoplay playsinline muted></video>
-    <!-- Canvas de preview: muestra el stream con filtros aplicados -->
     <canvas id="preview"></canvas>
-    <!-- Canvas oculto para captura -->
     <canvas id="canvas"></canvas>
+
     <div id="overlay">
       <div class="corner tl"></div><div class="corner tr"></div>
       <div class="corner bl"></div><div class="corner br"></div>
     </div>
+
+    <!-- Semáforo de exposición -->
+    <div id="exposure-meter">
+      <div class="traffic-light">
+        <div class="tl-dot red    inactive" id="tl-red"></div>
+        <div class="tl-dot yellow inactive" id="tl-yellow"></div>
+        <div class="tl-dot green  inactive" id="tl-green"></div>
+      </div>
+      <div id="exposure-label">—</div>
+    </div>
+
+    <!-- Aviso flotante en el preview -->
+    <div id="exposure-alert"></div>
+
     <div id="flash"></div>
     <div id="no-cam">
       <i class="ti ti-camera-off"></i>
@@ -229,34 +365,40 @@
   <!-- Controles de imagen -->
   <div id="img-controls">
     <div id="img-controls-header">
-      <span>🎛️  Ajustes de imagen</span>
+      <span>🎛️ Ajustes de imagen</span>
       <button id="reset-img-btn" onclick="resetImgControls()">Restablecer</button>
+    </div>
+
+    <!-- Indicador de calidad -->
+    <div id="quality-indicator" class="q-idle">
+      <i class="ti ti-eye-off" id="quality-icon"></i>
+      <div id="quality-details">
+        <div id="quality-title">Activando cámara...</div>
+        <div id="quality-hint">El semáforo aparece en el visor</div>
+      </div>
     </div>
 
     <div class="ctrl-row">
       <label>💡 Brillo</label>
-      <input type="range" id="ctrl-brightness" min="-100" max="100" value="0"
+      <input type="range" id="ctrl-brightness" min="-100" max="100" value="0" step="1"
              oninput="updateFilter()">
       <span class="val" id="val-brightness">0</span>
     </div>
-
     <div class="ctrl-row">
       <label>🔆 Contraste</label>
-      <input type="range" id="ctrl-contrast" min="-100" max="100" value="0"
+      <input type="range" id="ctrl-contrast" min="-100" max="100" value="0" step="1"
              oninput="updateFilter()">
       <span class="val" id="val-contrast">0</span>
     </div>
-
     <div class="ctrl-row">
       <label>🌡️ Exposición</label>
       <input type="range" id="ctrl-exposure" min="-1.5" max="1.5" value="0" step="0.05"
              oninput="updateFilter()">
-      <span class="val" id="val-exposure">0</span>
+      <span class="val" id="val-exposure">0.00</span>
     </div>
-
     <div class="ctrl-row">
       <label>🎨 Saturación</label>
-      <input type="range" id="ctrl-saturation" min="-100" max="100" value="0"
+      <input type="range" id="ctrl-saturation" min="-100" max="100" value="0" step="1"
              oninput="updateFilter()">
       <span class="val" id="val-saturation">0</span>
     </div>
@@ -337,30 +479,46 @@
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyD5pScmWj5G_2cgxjOjj0YtkLWNWvdG2QJgkP9hlIDS3KFx21tnREJ3Efu4_LMo6u1/exec";
 
   // ── Estado ──────────────────────────────────────────────────────────────────
-  let photoCount   = 0;
-  let stream       = null;
-  let camActive    = false;
-  let uploadQueue  = [];
-  let isUploading  = false;
-  let animFrameId  = null;
+  let photoCount  = 0;
+  let stream      = null;
+  let camActive   = false;
+  let uploadQueue = [];
+  let isUploading = false;
+  let animFrameId = null;
 
-  // Parámetros de imagen (todos en rango [-100, 100] excepto exposure)
+  // Estado del semáforo (persistente entre frames)
+  let exposureState = 'idle'; // 'idle' | 'good' | 'warn-dark' | 'warn-over' | 'bad-dark' | 'bad-over'
+  let _histTimer    = 0;
+  let _alertTimer   = null;
+  let _lastAlertShown = 0;
+
   let imgParams = { brightness: 0, contrast: 0, exposure: 0, saturation: 0 };
 
   // ── Elementos ───────────────────────────────────────────────────────────────
-  const video    = document.getElementById('video');
-  const preview  = document.getElementById('preview');
-  const canvas   = document.getElementById('canvas');
-  const shutter  = document.getElementById('shutter');
-  const noCam    = document.getElementById('no-cam');
-  const countEl  = document.getElementById('count');
-  const thumbRow = document.getElementById('thumb-row');
-  const flash    = document.getElementById('flash');
-  const badge    = document.getElementById('status-badge');
-  const driveBox = document.getElementById('drive-status');
-  const histogram= document.getElementById('histogram');
-  const histCtx  = histogram.getContext('2d');
-  const prevCtx  = preview.getContext('2d');
+  const video     = document.getElementById('video');
+  const preview   = document.getElementById('preview');
+  const canvas    = document.getElementById('canvas');
+  const shutter   = document.getElementById('shutter');
+  const noCam     = document.getElementById('no-cam');
+  const countEl   = document.getElementById('count');
+  const thumbRow  = document.getElementById('thumb-row');
+  const flash     = document.getElementById('flash');
+  const badge     = document.getElementById('status-badge');
+  const driveBox  = document.getElementById('drive-status');
+  const histogram = document.getElementById('histogram');
+  const histCtx   = histogram.getContext('2d');
+  const prevCtx   = preview.getContext('2d');
+
+  const tlRed    = document.getElementById('tl-red');
+  const tlYellow = document.getElementById('tl-yellow');
+  const tlGreen  = document.getElementById('tl-green');
+  const expLabel = document.getElementById('exposure-label');
+  const expAlert = document.getElementById('exposure-alert');
+
+  const qualityEl    = document.getElementById('quality-indicator');
+  const qualityIcon  = document.getElementById('quality-icon');
+  const qualityTitle = document.getElementById('quality-title');
+  const qualityHint  = document.getElementById('quality-hint');
 
   // ── Cámara ──────────────────────────────────────────────────────────────────
   async function startCamera() {
@@ -379,6 +537,7 @@
       noCam.style.display = 'none';
       camActive = true;
       badge.textContent = 'Cámara activa';
+      updateQualityCard('idle');
       startPreviewLoop();
     } catch(e) {
       noCam.innerHTML = '<i class="ti ti-camera-off"></i><span>Activa los permisos de cámara</span>';
@@ -386,31 +545,23 @@
     }
   }
 
-  // ── Loop de preview con filtros ─────────────────────────────────────────────
-  // Aplica brillo/contraste/exposición/saturación frame a frame
-  // usando manipulación de píxeles en canvas.
-  // Los filtros se aplican también al momento de capturar.
-
+  // ── Loop de preview ──────────────────────────────────────────────────────────
   function startPreviewLoop() {
     if (animFrameId) cancelAnimationFrame(animFrameId);
-
     function loop() {
       if (!camActive || video.readyState < 2) {
         animFrameId = requestAnimationFrame(loop); return;
       }
-
       const vw = video.videoWidth;
       const vh = video.videoHeight;
       if (!vw || !vh) { animFrameId = requestAnimationFrame(loop); return; }
 
-      // Ajustar tamaño del preview al contenedor
       const container = preview.parentElement;
       const cw = container.clientWidth;
       const ch = container.clientHeight;
       preview.width  = cw;
       preview.height = ch;
 
-      // Dibujar video escalado (cover)
       const scale = Math.max(cw/vw, ch/vh);
       const dw = vw * scale;
       const dh = vh * scale;
@@ -419,55 +570,38 @@
 
       prevCtx.drawImage(video, dx, dy, dw, dh);
       applyFiltersToCanvas(prevCtx, cw, ch);
-      drawHistogram(prevCtx, cw, ch);
+      analyzeExposure(prevCtx, cw, ch);
 
       animFrameId = requestAnimationFrame(loop);
     }
     loop();
   }
 
-  // ── Aplicar filtros de imagen al contexto dado ───────────────────────────────
-  // brightness: -100 a 100  (añade/quita a cada canal)
-  // contrast:   -100 a 100  (factor multiplicativo centrado en 128)
-  // exposure:   -1.5 a 1.5  (multiplica como stops de exposición: 2^exp)
-  // saturation: -100 a 100  (mezcla con luminancia)
-
+  // ── Aplicar filtros ──────────────────────────────────────────────────────────
   function applyFiltersToCanvas(ctx, w, h) {
     const { brightness, contrast, exposure, saturation } = imgParams;
-
-    // Si todo está en 0, no hay nada que hacer
     if (brightness === 0 && contrast === 0 && exposure === 0 && saturation === 0) return;
 
     const imageData = ctx.getImageData(0, 0, w, h);
     const data = imageData.data;
-
-    const bAdd   = brightness * 2.55;            // -255..255
+    const bAdd   = brightness * 2.55;
     const cFactor= (259 * (contrast + 255)) / (255 * (259 - contrast));
-    const expMul = Math.pow(2, exposure);         // stops
-    const satF   = (saturation + 100) / 100;      // 0..2
+    const expMul = Math.pow(2, exposure);
+    const satF   = (saturation + 100) / 100;
 
     for (let i = 0; i < data.length; i += 4) {
       let r = data[i], g = data[i+1], b = data[i+2];
-
-      // Exposición (multiplica antes que contraste)
       r = r * expMul; g = g * expMul; b = b * expMul;
-
-      // Brillo
       r += bAdd; g += bAdd; b += bAdd;
-
-      // Contraste (centrado en 128)
       r = cFactor * (r - 128) + 128;
       g = cFactor * (g - 128) + 128;
       b = cFactor * (b - 128) + 128;
-
-      // Saturación (mezcla con luma)
       if (saturation !== 0) {
         const luma = 0.299*r + 0.587*g + 0.114*b;
         r = luma + satF * (r - luma);
         g = luma + satF * (g - luma);
         b = luma + satF * (b - luma);
       }
-
       data[i]   = Math.max(0, Math.min(255, r));
       data[i+1] = Math.max(0, Math.min(255, g));
       data[i+2] = Math.max(0, Math.min(255, b));
@@ -475,28 +609,151 @@
     ctx.putImageData(imageData, 0, 0);
   }
 
-  // ── Histograma mini ──────────────────────────────────────────────────────────
-  // Muestrea cada 8 píxeles del preview para no frenar el teléfono.
-  let _histTimer = 0;
+  // ── Análisis de exposición + semáforo ────────────────────────────────────────
+  // Ejecuta cada 12 frames para no sobrecargar el teléfono.
+  // Calcula:
+  //  - luma promedio de la imagen (luminosidad media)
+  //  - % de píxeles muy oscuros (< 30) → imagen oscura
+  //  - % de píxeles muy brillantes (> 240) → sobreexpuesta
+  //  - distribución del histograma para dibujo
 
-  function drawHistogram(ctx, w, h) {
-    // Actualizar histograma cada ~10 frames para no sobrecargar
+  function analyzeExposure(ctx, w, h) {
     _histTimer++;
-    if (_histTimer % 10 !== 0) return;
+    if (_histTimer % 12 !== 0) return;
 
     const sample = ctx.getImageData(0, 0, w, h);
     const d = sample.data;
     const bins = new Uint32Array(256);
+    let lumaSum = 0;
+    let totalPx = 0;
 
     // Muestra cada 8 px para velocidad
     for (let i = 0; i < d.length; i += 32) {
       const luma = (d[i]*77 + d[i+1]*150 + d[i+2]*29) >> 8;
       bins[luma]++;
+      lumaSum += luma;
+      totalPx++;
     }
 
+    const avgLuma = lumaSum / totalPx;
+
+    // Porcentaje de píxeles muy oscuros (< 30) y muy brillantes (> 240)
+    const darkPx  = bins.slice(0, 30).reduce((a,b) => a+b, 0);
+    const overPx  = bins.slice(240).reduce((a,b) => a+b, 0);
+    const darkPct = darkPx / totalPx;
+    const overPct = overPx / totalPx;
+
+    // ── Clasificación ──────────────────────────────────────────────────────
+    // ROJO: imagen claramente inutilizable
+    //   - Muy oscura: luma < 45 o más del 60% de píxeles muy oscuros
+    //   - Sobreexpuesta: más del 25% de píxeles saturados
+    // AMARILLO: imagen usable pero al límite
+    //   - Oscura: luma 45–80 o 30–60% oscuros
+    //   - Algo sobreexpuesta: 10–25% saturados
+    // VERDE: imagen correcta para análisis
+
+    let newState;
+    if (avgLuma < 45 || darkPct > 0.60) {
+      newState = 'bad-dark';
+    } else if (overPct > 0.25) {
+      newState = 'bad-over';
+    } else if (avgLuma < 80 || darkPct > 0.30) {
+      newState = 'warn-dark';
+    } else if (overPct > 0.10) {
+      newState = 'warn-over';
+    } else {
+      newState = 'good';
+    }
+
+    updateTrafficLight(newState);
+    drawHistogramData(bins, totalPx, overPct);
+    exposureState = newState;
+  }
+
+  // ── Actualizar semáforo visual ────────────────────────────────────────────
+  function updateTrafficLight(state) {
+    tlRed.className    = 'tl-dot red    inactive';
+    tlYellow.className = 'tl-dot yellow inactive';
+    tlGreen.className  = 'tl-dot green  inactive';
+    expAlert.className = '';
+    expAlert.textContent = '';
+
+    if (state === 'bad-dark') {
+      tlRed.className = 'tl-dot red active';
+      expLabel.textContent = 'OSCURO';
+      shutter.className = 'shutter-bad';
+      showAlert('alert-dark', '⚠️  Imagen muy oscura — sube la exposición o el brillo');
+      updateQualityCard('bad', 'Imagen muy oscura', 'Sube la exposición o el brillo del slider');
+
+    } else if (state === 'bad-over') {
+      tlRed.className = 'tl-dot red active';
+      expLabel.textContent = 'SOBRE';
+      shutter.className = 'shutter-bad';
+      showAlert('alert-over', '⚠️  Sobreexpuesta — baja la exposición o aleja la luz');
+      updateQualityCard('bad', 'Sobreexpuesta', 'Baja la exposición o aleja la fuente de luz');
+
+    } else if (state === 'warn-dark') {
+      tlYellow.className = 'tl-dot yellow active';
+      expLabel.textContent = 'DIM';
+      shutter.className = 'shutter-warn';
+      updateQualityCard('warn', 'Un poco oscura', 'Prueba subir brillo o exposición levemente');
+
+    } else if (state === 'warn-over') {
+      tlYellow.className = 'tl-dot yellow active';
+      expLabel.textContent = 'BRILLANTE';
+      shutter.className = 'shutter-warn';
+      updateQualityCard('warn', 'Un poco brillante', 'Prueba bajar la exposición levemente');
+
+    } else if (state === 'good') {
+      tlGreen.className = 'tl-dot green active';
+      expLabel.textContent = 'OK';
+      shutter.className = 'shutter-good';
+      updateQualityCard('good', 'Exposición correcta', 'Listo para capturar');
+    }
+  }
+
+  // Muestra el aviso flotante en el viewfinder, se oculta tras 3 s
+  function showAlert(cssClass, msg) {
+    const now = Date.now();
+    if (now - _lastAlertShown < 5000) return; // no spamear
+    _lastAlertShown = now;
+
+    expAlert.className = cssClass + ' show';
+    expAlert.textContent = msg;
+
+    if (_alertTimer) clearTimeout(_alertTimer);
+    _alertTimer = setTimeout(() => {
+      expAlert.className = '';
+      expAlert.textContent = '';
+    }, 3500);
+  }
+
+  // ── Indicador de calidad (panel inferior) ─────────────────────────────────
+  function updateQualityCard(level, title, hint) {
+    qualityEl.className = 'quality-indicator';
+    const icons = { idle: 'ti-eye-off', good: 'ti-circle-check', warn: 'ti-alert-triangle', bad: 'ti-alert-circle' };
+    qualityIcon.className = 'ti ' + (icons[level] || 'ti-eye-off');
+
+    if (level === 'good') {
+      qualityEl.className = 'q-good';
+    } else if (level === 'warn') {
+      qualityEl.className = 'q-warn';
+    } else if (level === 'bad') {
+      qualityEl.className = 'q-bad';
+    } else {
+      qualityEl.className = 'q-idle';
+    }
+    qualityEl.id = 'quality-indicator';
+
+    qualityTitle.textContent = title || 'Activando cámara...';
+    qualityHint.textContent  = hint  || 'El semáforo aparece en el visor';
+  }
+
+  // ── Histograma mini ──────────────────────────────────────────────────────────
+  function drawHistogramData(bins, totalPx, overPct) {
     const max = Math.max(...bins);
-    const hw = histogram.width;
-    const hh = histogram.height;
+    const hw  = histogram.width;
+    const hh  = histogram.height;
 
     histCtx.clearRect(0, 0, hw, hh);
     histCtx.fillStyle = '#1a1a1a';
@@ -505,21 +762,17 @@
     const barW = hw / 256;
     for (let x = 0; x < 256; x++) {
       const barH = (bins[x] / max) * hh;
-      // Color: sombras=azul, medios=verde, altas=amarillo
-      const t = x / 255;
-      const r = Math.round(t * 255);
-      const g = Math.round(Math.sin(t * Math.PI) * 200);
-      const bl= Math.round((1-t) * 255);
+      const t  = x / 255;
+      const r  = Math.round(t * 255);
+      const g  = Math.round(Math.sin(t * Math.PI) * 200);
+      const bl = Math.round((1-t) * 255);
       histCtx.fillStyle = `rgba(${r},${g},${bl},0.85)`;
       histCtx.fillRect(x * barW, hh - barH, barW + 0.5, barH);
     }
 
-    // Línea de sobreexposición (zona roja si hay picos en 250-255)
-    const overExp = bins.slice(250).reduce((a,b)=>a+b,0);
-    const total   = d.length / 4;
-    if (overExp / total > 0.02) {
+    if (overPct > 0.10) {
       histCtx.fillStyle = 'rgba(255,50,50,0.35)';
-      histCtx.fillRect(hw * 0.97, 0, hw * 0.03, hh);
+      histCtx.fillRect(hw * 0.95, 0, hw * 0.05, hh);
       document.getElementById('histogram-label').textContent = 'Histograma ⚠️ Sobreexpuesto';
     } else {
       document.getElementById('histogram-label').textContent = 'Histograma';
@@ -561,8 +814,6 @@
 
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, w, h);
-
-    // Aplicar los mismos filtros a la foto capturada
     applyFiltersToCanvas(ctx, w, h);
 
     flash.style.opacity = '0.9';
@@ -575,24 +826,49 @@
     const filename = `${session}_${String(photoCount).padStart(3,'0')}.jpg`;
     const dataUrl  = canvas.toDataURL('image/jpeg', 0.92);
 
-    addThumb(dataUrl, filename);
+    // Pasar el estado de calidad actual a la miniatura
+    const qState = exposureState;
+    addThumb(dataUrl, filename, qState);
     enqueueUpload(dataUrl, filename, session);
   }
 
   // ── Miniaturas ───────────────────────────────────────────────────────────────
-  function addThumb(dataUrl, filename) {
+  function addThumb(dataUrl, filename, qState) {
     const emptyEl = document.getElementById('empty-thumbs');
     if (emptyEl) emptyEl.remove();
+
     const wrap = document.createElement('div');
     wrap.className = 'thumb-wrap';
     wrap.id = 'wrap-' + filename;
+
     const img = document.createElement('img');
     img.src = dataUrl; img.className = 'thumb';
     img.alt = filename; img.title = filename;
+
+    // Badge de calidad sobre la miniatura
+    const qbadge = document.createElement('div');
+    qbadge.className = 'thumb-quality-badge';
+    if (qState === 'good') {
+      qbadge.className += ' tqb-ok';
+      qbadge.textContent = 'OK';
+    } else if (qState === 'warn-dark' || qState === 'warn-over') {
+      qbadge.className += ' tqb-warn';
+      qbadge.textContent = '~OK';
+    } else if (qState === 'bad-dark') {
+      qbadge.className += ' tqb-bad';
+      qbadge.textContent = 'OSC';
+    } else if (qState === 'bad-over') {
+      qbadge.className += ' tqb-bad';
+      qbadge.textContent = 'OVR';
+    }
+
     const dot = document.createElement('div');
     dot.className = 'status-dot dot-uploading';
     dot.id = 'dot-' + filename;
-    wrap.appendChild(img); wrap.appendChild(dot);
+
+    wrap.appendChild(img);
+    wrap.appendChild(qbadge);
+    wrap.appendChild(dot);
     thumbRow.appendChild(wrap);
     thumbRow.scrollLeft = thumbRow.scrollWidth;
   }
@@ -662,7 +938,7 @@
       countEl.textContent = photoCount;
       const session  = document.getElementById('cfg-session').value || 'Proyecto_001';
       const filename = `${session}_${String(photoCount).padStart(3,'0')}.jpg`;
-      addThumb(ev.target.result, filename);
+      addThumb(ev.target.result, filename, 'idle');
       enqueueUpload(ev.target.result, filename, session);
     };
     reader.readAsDataURL(file);
