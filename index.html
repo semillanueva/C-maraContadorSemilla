@@ -14,7 +14,6 @@
       display: flex;
       justify-content: center;
     }
-
     #app {
       max-width: 420px;
       width: 100%;
@@ -23,346 +22,265 @@
       flex-direction: column;
       gap: 12px;
     }
-
     #header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0.5rem 0;
     }
-
-    #header h1 {
-      font-size: 17px;
-      font-weight: 500;
-      color: #1a1a1a;
-    }
-
+    #header h1 { font-size: 17px; font-weight: 500; color: #1a1a1a; }
     #status-badge {
-      font-size: 12px;
-      color: #666;
-      background: #ebebeb;
-      padding: 3px 10px;
-      border-radius: 8px;
-      border: 0.5px solid #ddd;
+      font-size: 12px; color: #666; background: #ebebeb;
+      padding: 3px 10px; border-radius: 8px; border: 0.5px solid #ddd;
     }
 
+    /* ── Viewfinder ── */
     #viewfinder {
-      width: 100%;
-      aspect-ratio: 4/3;
-      background: #1a1a1a;
-      border-radius: 14px;
-      overflow: hidden;
-      position: relative;
+      width: 100%; aspect-ratio: 4/3;
+      background: #1a1a1a; border-radius: 14px;
+      overflow: hidden; position: relative;
       border: 0.5px solid #ccc;
     }
-
-    #video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
+    /* El video real queda oculto, el canvas muestra el stream filtrado */
+    #video { display: none; }
+    #preview {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
     }
-
     #canvas { display: none; }
 
     #overlay { position: absolute; inset: 0; pointer-events: none; }
-
-    .corner {
-      position: absolute;
-      width: 22px;
-      height: 22px;
-      border-color: rgba(255,255,255,0.7);
-      border-style: solid;
-    }
-    .corner.tl { top: 16px; left: 16px; border-width: 2px 0 0 2px; border-radius: 3px 0 0 0; }
-    .corner.tr { top: 16px; right: 16px; border-width: 2px 2px 0 0; border-radius: 0 3px 0 0; }
-    .corner.bl { bottom: 16px; left: 16px; border-width: 0 0 2px 2px; border-radius: 0 0 0 3px; }
-    .corner.br { bottom: 16px; right: 16px; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; }
+    .corner { position: absolute; width: 22px; height: 22px; border-color: rgba(255,255,255,0.7); border-style: solid; }
+    .corner.tl { top:16px; left:16px; border-width:2px 0 0 2px; border-radius:3px 0 0 0; }
+    .corner.tr { top:16px; right:16px; border-width:2px 2px 0 0; border-radius:0 3px 0 0; }
+    .corner.bl { bottom:16px; left:16px; border-width:0 0 2px 2px; border-radius:0 0 0 3px; }
+    .corner.br { bottom:16px; right:16px; border-width:0 2px 2px 0; border-radius:0 0 3px 0; }
 
     #flash {
-      position: absolute;
-      inset: 0;
-      background: white;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.05s;
+      position: absolute; inset: 0; background: white;
+      opacity: 0; pointer-events: none; transition: opacity 0.05s;
     }
-
     #cam-label {
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 11px;
-      color: rgba(255,255,255,0.5);
-      white-space: nowrap;
+      position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+      font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap;
     }
-
     #no-cam {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      color: rgba(255,255,255,0.4);
-      font-size: 13px;
+      position: absolute; inset: 0; display: flex;
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 8px; color: rgba(255,255,255,0.4); font-size: 13px;
     }
-
     #no-cam i { font-size: 32px; }
 
-    #session-card {
-      background: #fff;
-      border: 0.5px solid #ddd;
-      border-radius: 14px;
-      padding: 0.75rem 1rem;
+    /* ── Controles de imagen ── */
+    #img-controls {
+      background: #fff; border: 0.5px solid #ddd;
+      border-radius: 14px; padding: 0.85rem 1rem;
+      display: flex; flex-direction: column; gap: 10px;
     }
-
-    #session-label {
-      font-size: 11px;
-      color: #999;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    #session-name {
-      font-size: 14px;
-      color: #1a1a1a;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    #session-name i { font-size: 15px; color: #888; }
-
-    #controls {
-      display: flex;
-      align-items: center;
+    #img-controls-header {
+      display: flex; align-items: center;
       justify-content: space-between;
-      padding: 0.25rem 0;
+    }
+    #img-controls-header span {
+      font-size: 12px; font-weight: 600; color: #555;
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    #reset-img-btn {
+      font-size: 11px; color: #888; background: #f0f0eb;
+      border: 0.5px solid #ddd; border-radius: 6px;
+      padding: 2px 10px; cursor: pointer;
+    }
+    .ctrl-row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .ctrl-row label {
+      font-size: 12px; color: #666; width: 82px; flex-shrink: 0;
+    }
+    .ctrl-row input[type=range] {
+      flex: 1; accent-color: #4338ca; height: 4px;
+    }
+    .ctrl-row .val {
+      font-size: 12px; color: #333; font-weight: 600;
+      width: 34px; text-align: right; flex-shrink: 0;
     }
 
-    #counter-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      min-width: 48px;
+    /* ── Histograma mini ── */
+    #histogram-wrap {
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    #histogram-label {
+      font-size: 11px; color: #aaa;
+    }
+    #histogram {
+      width: 100%; height: 40px; border-radius: 6px;
+      border: 0.5px solid #eee; background: #1a1a1a;
     }
 
-    #count {
-      font-size: 28px;
-      font-weight: 500;
-      color: #1a1a1a;
-      line-height: 1;
+    /* ── Session card ── */
+    #session-card {
+      background: #fff; border: 0.5px solid #ddd;
+      border-radius: 14px; padding: 0.75rem 1rem;
+    }
+    #session-label { font-size: 11px; color: #999; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    #session-name { font-size: 14px; color: #1a1a1a; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+    #session-name i { font-size: 15px; color: #888; }
+    #edit-row { display: none; margin-top: 8px; gap: 6px; align-items: center; flex-direction: row; }
+    #new-project-input {
+      flex: 1; font-size: 13px; padding: 7px 10px;
+      border: 0.5px solid #ccc; border-radius: 8px;
+      background: #fafafa; color: #1a1a1a; width: 100%;
     }
 
+    /* ── Controls ── */
+    #controls {
+      display: flex; align-items: center;
+      justify-content: space-between; padding: 0.25rem 0;
+    }
+    #counter-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 48px; }
+    #count { font-size: 28px; font-weight: 500; color: #1a1a1a; line-height: 1; }
     #count-label { font-size: 11px; color: #888; }
 
     #shutter {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      background: #fff;
-      border: 3px solid #aaa;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.1s, background 0.1s;
+      width: 72px; height: 72px; border-radius: 50%;
+      background: #fff; border: 3px solid #aaa;
+      cursor: pointer; display: flex; align-items: center;
+      justify-content: center; transition: transform 0.1s, background 0.1s;
     }
-
     #shutter:active { transform: scale(0.93); background: #f0f0f0; }
-    #shutter.disabled { opacity: 0.4; pointer-events: none; }
-
-    #shutter-inner {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: #1a1a1a;
-      opacity: 0.08;
-    }
+    #shutter-inner { width: 56px; height: 56px; border-radius: 50%; background: #1a1a1a; opacity: 0.08; }
 
     #upload-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      cursor: pointer;
-      background: none;
-      border: none;
-      padding: 0;
-      min-width: 48px;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 3px; cursor: pointer; background: none;
+      border: none; padding: 0; min-width: 48px;
     }
-
     #upload-btn i { font-size: 24px; color: #888; }
     #upload-btn span { font-size: 11px; color: #888; }
 
+    /* ── Thumbnails ── */
     #thumb-row {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      padding-bottom: 2px;
-      min-height: 60px;
-      align-items: center;
+      display: flex; gap: 6px; overflow-x: auto;
+      padding-bottom: 2px; min-height: 60px; align-items: center;
     }
-
     #thumb-row::-webkit-scrollbar { display: none; }
-
     .thumb-wrap { position: relative; flex-shrink: 0; }
-
-    .thumb {
-      width: 52px;
-      height: 52px;
-      border-radius: 8px;
-      object-fit: cover;
-      border: 0.5px solid #ddd;
-      display: block;
-    }
-
-    .status-dot {
-      position: absolute;
-      bottom: 4px;
-      right: 4px;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      border: 1.5px solid #fff;
-    }
-
+    .thumb { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; border: 0.5px solid #ddd; display: block; }
+    .status-dot { position: absolute; bottom: 4px; right: 4px; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #fff; }
     .dot-uploading { background: #EF9F27; }
-    .dot-done { background: #639922; }
-    .dot-error { background: #E24B4A; }
+    .dot-done      { background: #639922; }
+    .dot-error     { background: #E24B4A; }
+    #empty-thumbs  { font-size: 12px; color: #bbb; width: 100%; text-align: center; }
 
-    #empty-thumbs {
-      font-size: 12px;
-      color: #bbb;
-      width: 100%;
-      text-align: center;
-    }
-
+    /* ── Drive status ── */
     #drive-status {
-      background: #f0f0eb;
-      border-radius: 8px;
-      padding: 0.6rem 0.9rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: #666;
-      border: 0.5px solid #ddd;
-      min-height: 40px;
+      background: #f0f0eb; border-radius: 8px; padding: 0.6rem 0.9rem;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; color: #666;
+      border: 0.5px solid #ddd; min-height: 40px;
     }
-
     #drive-status i { font-size: 16px; flex-shrink: 0; }
-    #drive-status.uploading { border-color: #EF9F27; color: #854F0B; background: #FAEEDA; }
-    #drive-status.success { border-color: #639922; color: #3B6D11; background: #EAF3DE; }
-    #drive-status.error { border-color: #E24B4A; color: #A32D2D; background: #FCEBEB; }
+    #drive-status.uploading { border-color:#EF9F27; color:#854F0B; background:#FAEEDA; }
+    #drive-status.success   { border-color:#639922; color:#3B6D11; background:#EAF3DE; }
+    #drive-status.error     { border-color:#E24B4A; color:#A32D2D; background:#FCEBEB; }
 
+    /* ── Config ── */
     #config-btn {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 0.6rem;
-      font-size: 13px;
-      color: #666;
-      background: none;
-      border: 0.5px solid #ddd;
-      border-radius: 8px;
-      cursor: pointer;
+      width: 100%; display: flex; align-items: center;
+      justify-content: center; gap: 6px; padding: 0.6rem;
+      font-size: 13px; color: #666; background: none;
+      border: 0.5px solid #ddd; border-radius: 8px; cursor: pointer;
     }
-
     #config-btn:hover { background: #f0f0eb; }
-
-    #config-panel {
-      display: none;
-      background: #fff;
-      border: 0.5px solid #ddd;
-      border-radius: 14px;
-      padding: 1rem;
-      gap: 12px;
-      flex-direction: column;
-    }
-
+    #config-panel { display: none; background: #fff; border: 0.5px solid #ddd; border-radius: 14px; padding: 1rem; gap: 12px; flex-direction: column; }
     #config-panel.open { display: flex; }
-
     .config-row { display: flex; flex-direction: column; gap: 4px; }
-
     .config-row label { font-size: 12px; color: #888; }
-
-    .config-row input, .config-row select {
-      font-size: 13px;
-      padding: 8px 10px;
-      border: 0.5px solid #ccc;
-      border-radius: 8px;
-      width: 100%;
-      background: #fafafa;
-      color: #1a1a1a;
-    }
-
-    .config-row input:focus, .config-row select:focus {
-      outline: none;
-      border-color: #888;
-    }
-
-    .note {
-      font-size: 12px;
-      color: #aaa;
-      padding: 0.5rem 0;
-      border-top: 0.5px solid #eee;
-      line-height: 1.5;
-    }
-
-    #queue-info {
-      font-size: 11px;
-      color: #aaa;
-      text-align: center;
-    }
+    .config-row input, .config-row select { font-size: 13px; padding: 8px 10px; border: 0.5px solid #ccc; border-radius: 8px; width: 100%; background: #fafafa; color: #1a1a1a; }
+    .note { font-size: 12px; color: #aaa; padding: 0.5rem 0; border-top: 0.5px solid #eee; line-height: 1.5; }
+    #queue-info { font-size: 11px; color: #aaa; text-align: center; }
   </style>
 </head>
 <body>
-
 <div id="app">
 
   <div id="header">
-    <h1><i class="ti ti-wheat" aria-hidden="true" style="font-size:18px; margin-right:6px; vertical-align:-2px;"></i>Grain Cam</h1>
+    <h1><i class="ti ti-wheat" style="font-size:18px;margin-right:6px;vertical-align:-2px;"></i>Grain Cam</h1>
     <span id="status-badge">Iniciando...</span>
   </div>
 
   <div id="viewfinder">
     <video id="video" autoplay playsinline muted></video>
+    <!-- Canvas de preview: muestra el stream con filtros aplicados -->
+    <canvas id="preview"></canvas>
+    <!-- Canvas oculto para captura -->
     <canvas id="canvas"></canvas>
     <div id="overlay">
-      <div class="corner tl"></div>
-      <div class="corner tr"></div>
-      <div class="corner bl"></div>
-      <div class="corner br"></div>
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
     </div>
     <div id="flash"></div>
     <div id="no-cam">
-      <i class="ti ti-camera-off" aria-hidden="true"></i>
+      <i class="ti ti-camera-off"></i>
       <span>Presiona el botón para activar la cámara</span>
     </div>
     <div id="cam-label">Semilla Nueva · Grain Analyzer</div>
   </div>
 
+  <!-- Controles de imagen -->
+  <div id="img-controls">
+    <div id="img-controls-header">
+      <span>🎛️  Ajustes de imagen</span>
+      <button id="reset-img-btn" onclick="resetImgControls()">Restablecer</button>
+    </div>
+
+    <div class="ctrl-row">
+      <label>💡 Brillo</label>
+      <input type="range" id="ctrl-brightness" min="-100" max="100" value="0"
+             oninput="updateFilter()">
+      <span class="val" id="val-brightness">0</span>
+    </div>
+
+    <div class="ctrl-row">
+      <label>🔆 Contraste</label>
+      <input type="range" id="ctrl-contrast" min="-100" max="100" value="0"
+             oninput="updateFilter()">
+      <span class="val" id="val-contrast">0</span>
+    </div>
+
+    <div class="ctrl-row">
+      <label>🌡️ Exposición</label>
+      <input type="range" id="ctrl-exposure" min="-1.5" max="1.5" value="0" step="0.05"
+             oninput="updateFilter()">
+      <span class="val" id="val-exposure">0</span>
+    </div>
+
+    <div class="ctrl-row">
+      <label>🎨 Saturación</label>
+      <input type="range" id="ctrl-saturation" min="-100" max="100" value="0"
+             oninput="updateFilter()">
+      <span class="val" id="val-saturation">0</span>
+    </div>
+
+    <!-- Histograma mini -->
+    <div id="histogram-wrap">
+      <span id="histogram-label">Histograma</span>
+      <canvas id="histogram" width="380" height="40"></canvas>
+    </div>
+  </div>
+
+  <!-- Proyecto activo -->
   <div id="session-card">
     <div id="session-label">Proyecto activo</div>
     <div id="session-name">
-      <i class="ti ti-folder" aria-hidden="true"></i>
+      <i class="ti ti-folder"></i>
       <span id="session-text">Proyecto_001</span>
-      <button id="edit-btn" onclick="toggleEdit()" title="Cambiar proyecto" style="margin-left:auto; background:none; border:none; cursor:pointer; padding:2px 6px; border-radius:6px; color:#888; font-size:13px;">
-        <i class="ti ti-pencil" aria-hidden="true"></i> Cambiar
+      <button id="edit-btn" onclick="toggleEdit()" style="margin-left:auto;background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:6px;color:#888;font-size:13px;">
+        <i class="ti ti-pencil"></i> Cambiar
       </button>
     </div>
-    <div id="edit-row" style="display:none; margin-top:8px; display:none; gap:6px; align-items:center; flex-direction:row;">
-      <input type="text" id="new-project-input" placeholder="Ej: Finca_San_Juan" style="flex:1; font-size:13px; padding:7px 10px; border:0.5px solid #ccc; border-radius:8px; background:#fafafa; color:#1a1a1a; width:100%;">
-      <button onclick="applyProject()" style="padding:7px 14px; font-size:13px; background:#1a1a1a; color:#fff; border:none; border-radius:8px; cursor:pointer; white-space:nowrap;">Aplicar</button>
+    <div id="edit-row" style="display:none;">
+      <input type="text" id="new-project-input" placeholder="Ej: Finca_San_Juan">
+      <button onclick="applyProject()" style="padding:7px 14px;font-size:13px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;cursor:pointer;white-space:nowrap;">Aplicar</button>
     </div>
   </div>
 
@@ -371,13 +289,11 @@
       <span id="count">0</span>
       <span id="count-label">fotos</span>
     </div>
-
     <button id="shutter" aria-label="Tomar foto">
       <div id="shutter-inner"></div>
     </button>
-
     <button id="upload-btn" aria-label="Subir foto desde galería">
-      <i class="ti ti-photo-up" aria-hidden="true"></i>
+      <i class="ti ti-photo-up"></i>
       <span>Galería</span>
       <input type="file" id="file-input" accept="image/*" style="display:none">
     </button>
@@ -388,7 +304,7 @@
   </div>
 
   <div id="drive-status">
-    <i class="ti ti-cloud" aria-hidden="true"></i>
+    <i class="ti ti-cloud"></i>
     <span id="drive-text">Listo para subir fotos a Drive</span>
   </div>
 
@@ -397,8 +313,7 @@
   </div>
 
   <button id="config-btn" onclick="toggleConfig()">
-    <i class="ti ti-settings" aria-hidden="true"></i>
-    Configuración de sesión
+    <i class="ti ti-settings"></i> Configuración de sesión
   </button>
 
   <div id="config-panel">
@@ -419,53 +334,220 @@
 </div>
 
 <script>
-  // ── Configuración ──────────────────────────────────────────
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyD5pScmWj5G_2cgxjOjj0YtkLWNWvdG2QJgkP9hlIDS3KFx21tnREJ3Efu4_LMo6u1/exec";
 
-  // ── Estado ─────────────────────────────────────────────────
-  let photoCount = 0;
-  let stream = null;
-  let camActive = false;
-  let uploadQueue = [];
-  let isUploading = false;
+  // ── Estado ──────────────────────────────────────────────────────────────────
+  let photoCount   = 0;
+  let stream       = null;
+  let camActive    = false;
+  let uploadQueue  = [];
+  let isUploading  = false;
+  let animFrameId  = null;
 
-  // ── Elementos ──────────────────────────────────────────────
-  const video      = document.getElementById('video');
-  const canvas     = document.getElementById('canvas');
-  const shutter    = document.getElementById('shutter');
-  const noCam      = document.getElementById('no-cam');
-  const countEl    = document.getElementById('count');
-  const thumbRow   = document.getElementById('thumb-row');
-  const flash      = document.getElementById('flash');
-  const badge      = document.getElementById('status-badge');
-  const driveBox   = document.getElementById('drive-status');
-  const driveText  = document.getElementById('drive-text');
-  const driveIcon  = driveBox.querySelector('i');
-  const queueInfo  = document.getElementById('queue-info');
-  const queueText  = document.getElementById('queue-text');
+  // Parámetros de imagen (todos en rango [-100, 100] excepto exposure)
+  let imgParams = { brightness: 0, contrast: 0, exposure: 0, saturation: 0 };
 
-  // ── Cámara ─────────────────────────────────────────────────
+  // ── Elementos ───────────────────────────────────────────────────────────────
+  const video    = document.getElementById('video');
+  const preview  = document.getElementById('preview');
+  const canvas   = document.getElementById('canvas');
+  const shutter  = document.getElementById('shutter');
+  const noCam    = document.getElementById('no-cam');
+  const countEl  = document.getElementById('count');
+  const thumbRow = document.getElementById('thumb-row');
+  const flash    = document.getElementById('flash');
+  const badge    = document.getElementById('status-badge');
+  const driveBox = document.getElementById('drive-status');
+  const histogram= document.getElementById('histogram');
+  const histCtx  = histogram.getContext('2d');
+  const prevCtx  = preview.getContext('2d');
+
+  // ── Cámara ──────────────────────────────────────────────────────────────────
   async function startCamera() {
     try {
       const res = document.getElementById('cfg-res').value;
-      const constraints = {
+      stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: 'environment',
           width:  { ideal: res === 'high' ? 3840 : 1920 },
           height: { ideal: res === 'high' ? 2160 : 1080 }
         }
-      };
-      stream = await navigator.mediaDevices.getUserMedia(constraints);
+      });
       video.srcObject = stream;
+      await new Promise(r => video.onloadedmetadata = r);
+      video.play();
       noCam.style.display = 'none';
       camActive = true;
       badge.textContent = 'Cámara activa';
-    } catch (e) {
+      startPreviewLoop();
+    } catch(e) {
       noCam.innerHTML = '<i class="ti ti-camera-off"></i><span>Activa los permisos de cámara</span>';
       badge.textContent = 'Sin permiso';
     }
   }
 
+  // ── Loop de preview con filtros ─────────────────────────────────────────────
+  // Aplica brillo/contraste/exposición/saturación frame a frame
+  // usando manipulación de píxeles en canvas.
+  // Los filtros se aplican también al momento de capturar.
+
+  function startPreviewLoop() {
+    if (animFrameId) cancelAnimationFrame(animFrameId);
+
+    function loop() {
+      if (!camActive || video.readyState < 2) {
+        animFrameId = requestAnimationFrame(loop); return;
+      }
+
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      if (!vw || !vh) { animFrameId = requestAnimationFrame(loop); return; }
+
+      // Ajustar tamaño del preview al contenedor
+      const container = preview.parentElement;
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+      preview.width  = cw;
+      preview.height = ch;
+
+      // Dibujar video escalado (cover)
+      const scale = Math.max(cw/vw, ch/vh);
+      const dw = vw * scale;
+      const dh = vh * scale;
+      const dx = (cw - dw) / 2;
+      const dy = (ch - dh) / 2;
+
+      prevCtx.drawImage(video, dx, dy, dw, dh);
+      applyFiltersToCanvas(prevCtx, cw, ch);
+      drawHistogram(prevCtx, cw, ch);
+
+      animFrameId = requestAnimationFrame(loop);
+    }
+    loop();
+  }
+
+  // ── Aplicar filtros de imagen al contexto dado ───────────────────────────────
+  // brightness: -100 a 100  (añade/quita a cada canal)
+  // contrast:   -100 a 100  (factor multiplicativo centrado en 128)
+  // exposure:   -1.5 a 1.5  (multiplica como stops de exposición: 2^exp)
+  // saturation: -100 a 100  (mezcla con luminancia)
+
+  function applyFiltersToCanvas(ctx, w, h) {
+    const { brightness, contrast, exposure, saturation } = imgParams;
+
+    // Si todo está en 0, no hay nada que hacer
+    if (brightness === 0 && contrast === 0 && exposure === 0 && saturation === 0) return;
+
+    const imageData = ctx.getImageData(0, 0, w, h);
+    const data = imageData.data;
+
+    const bAdd   = brightness * 2.55;            // -255..255
+    const cFactor= (259 * (contrast + 255)) / (255 * (259 - contrast));
+    const expMul = Math.pow(2, exposure);         // stops
+    const satF   = (saturation + 100) / 100;      // 0..2
+
+    for (let i = 0; i < data.length; i += 4) {
+      let r = data[i], g = data[i+1], b = data[i+2];
+
+      // Exposición (multiplica antes que contraste)
+      r = r * expMul; g = g * expMul; b = b * expMul;
+
+      // Brillo
+      r += bAdd; g += bAdd; b += bAdd;
+
+      // Contraste (centrado en 128)
+      r = cFactor * (r - 128) + 128;
+      g = cFactor * (g - 128) + 128;
+      b = cFactor * (b - 128) + 128;
+
+      // Saturación (mezcla con luma)
+      if (saturation !== 0) {
+        const luma = 0.299*r + 0.587*g + 0.114*b;
+        r = luma + satF * (r - luma);
+        g = luma + satF * (g - luma);
+        b = luma + satF * (b - luma);
+      }
+
+      data[i]   = Math.max(0, Math.min(255, r));
+      data[i+1] = Math.max(0, Math.min(255, g));
+      data[i+2] = Math.max(0, Math.min(255, b));
+    }
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  // ── Histograma mini ──────────────────────────────────────────────────────────
+  // Muestrea cada 8 píxeles del preview para no frenar el teléfono.
+  let _histTimer = 0;
+
+  function drawHistogram(ctx, w, h) {
+    // Actualizar histograma cada ~10 frames para no sobrecargar
+    _histTimer++;
+    if (_histTimer % 10 !== 0) return;
+
+    const sample = ctx.getImageData(0, 0, w, h);
+    const d = sample.data;
+    const bins = new Uint32Array(256);
+
+    // Muestra cada 8 px para velocidad
+    for (let i = 0; i < d.length; i += 32) {
+      const luma = (d[i]*77 + d[i+1]*150 + d[i+2]*29) >> 8;
+      bins[luma]++;
+    }
+
+    const max = Math.max(...bins);
+    const hw = histogram.width;
+    const hh = histogram.height;
+
+    histCtx.clearRect(0, 0, hw, hh);
+    histCtx.fillStyle = '#1a1a1a';
+    histCtx.fillRect(0, 0, hw, hh);
+
+    const barW = hw / 256;
+    for (let x = 0; x < 256; x++) {
+      const barH = (bins[x] / max) * hh;
+      // Color: sombras=azul, medios=verde, altas=amarillo
+      const t = x / 255;
+      const r = Math.round(t * 255);
+      const g = Math.round(Math.sin(t * Math.PI) * 200);
+      const bl= Math.round((1-t) * 255);
+      histCtx.fillStyle = `rgba(${r},${g},${bl},0.85)`;
+      histCtx.fillRect(x * barW, hh - barH, barW + 0.5, barH);
+    }
+
+    // Línea de sobreexposición (zona roja si hay picos en 250-255)
+    const overExp = bins.slice(250).reduce((a,b)=>a+b,0);
+    const total   = d.length / 4;
+    if (overExp / total > 0.02) {
+      histCtx.fillStyle = 'rgba(255,50,50,0.35)';
+      histCtx.fillRect(hw * 0.97, 0, hw * 0.03, hh);
+      document.getElementById('histogram-label').textContent = 'Histograma ⚠️ Sobreexpuesto';
+    } else {
+      document.getElementById('histogram-label').textContent = 'Histograma';
+    }
+  }
+
+  // ── Actualizar sliders ───────────────────────────────────────────────────────
+  function updateFilter() {
+    imgParams.brightness = parseInt(document.getElementById('ctrl-brightness').value);
+    imgParams.contrast   = parseInt(document.getElementById('ctrl-contrast').value);
+    imgParams.exposure   = parseFloat(document.getElementById('ctrl-exposure').value);
+    imgParams.saturation = parseInt(document.getElementById('ctrl-saturation').value);
+
+    document.getElementById('val-brightness').textContent = imgParams.brightness;
+    document.getElementById('val-contrast').textContent   = imgParams.contrast;
+    document.getElementById('val-exposure').textContent   = imgParams.exposure.toFixed(2);
+    document.getElementById('val-saturation').textContent = imgParams.saturation;
+  }
+
+  function resetImgControls() {
+    document.getElementById('ctrl-brightness').value = 0;
+    document.getElementById('ctrl-contrast').value   = 0;
+    document.getElementById('ctrl-exposure').value   = 0;
+    document.getElementById('ctrl-saturation').value = 0;
+    updateFilter();
+  }
+
+  // ── Captura ──────────────────────────────────────────────────────────────────
   shutter.addEventListener('click', async () => {
     if (!camActive) { await startCamera(); return; }
     takePhoto();
@@ -474,9 +556,14 @@
   function takePhoto() {
     const w = video.videoWidth;
     const h = video.videoHeight;
-    canvas.width = w;
+    canvas.width  = w;
     canvas.height = h;
-    canvas.getContext('2d').drawImage(video, 0, 0, w, h);
+
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, w, h);
+
+    // Aplicar los mismos filtros a la foto capturada
+    applyFiltersToCanvas(ctx, w, h);
 
     flash.style.opacity = '0.9';
     setTimeout(() => { flash.style.opacity = '0'; }, 120);
@@ -485,34 +572,27 @@
     countEl.textContent = photoCount;
 
     const session  = document.getElementById('cfg-session').value || 'Proyecto_001';
-    const filename = `${session}_${String(photoCount).padStart(3, '0')}.jpg`;
+    const filename = `${session}_${String(photoCount).padStart(3,'0')}.jpg`;
     const dataUrl  = canvas.toDataURL('image/jpeg', 0.92);
 
     addThumb(dataUrl, filename);
     enqueueUpload(dataUrl, filename, session);
   }
 
-  // ── Miniaturas ─────────────────────────────────────────────
+  // ── Miniaturas ───────────────────────────────────────────────────────────────
   function addThumb(dataUrl, filename) {
     const emptyEl = document.getElementById('empty-thumbs');
     if (emptyEl) emptyEl.remove();
-
     const wrap = document.createElement('div');
     wrap.className = 'thumb-wrap';
     wrap.id = 'wrap-' + filename;
-
     const img = document.createElement('img');
-    img.src = dataUrl;
-    img.className = 'thumb';
-    img.alt = filename;
-    img.title = filename;
-
+    img.src = dataUrl; img.className = 'thumb';
+    img.alt = filename; img.title = filename;
     const dot = document.createElement('div');
     dot.className = 'status-dot dot-uploading';
     dot.id = 'dot-' + filename;
-
-    wrap.appendChild(img);
-    wrap.appendChild(dot);
+    wrap.appendChild(img); wrap.appendChild(dot);
     thumbRow.appendChild(wrap);
     thumbRow.scrollLeft = thumbRow.scrollWidth;
   }
@@ -523,7 +603,7 @@
     dot.className = 'status-dot ' + (status === 'done' ? 'dot-done' : 'dot-error');
   }
 
-  // ── Cola de subida ─────────────────────────────────────────
+  // ── Cola de subida ────────────────────────────────────────────────────────────
   function enqueueUpload(dataUrl, filename, session) {
     uploadQueue.push({ dataUrl, filename, session });
     updateQueueInfo();
@@ -531,43 +611,25 @@
   }
 
   async function processQueue() {
-    if (uploadQueue.length === 0) {
-      isUploading = false;
-      updateQueueInfo();
-      return;
-    }
-
+    if (uploadQueue.length === 0) { isUploading = false; updateQueueInfo(); return; }
     isUploading = true;
     const item = uploadQueue[0];
-
     setDriveStatus('uploading', `<i class="ti ti-cloud-upload"></i> Subiendo ${item.filename}...`);
-
     try {
       const response = await fetch(SCRIPT_URL, {
         method: 'POST',
-        body: JSON.stringify({
-          image:    item.dataUrl,
-          filename: item.filename,
-          session:  item.session
-        })
+        body: JSON.stringify({ image: item.dataUrl, filename: item.filename, session: item.session })
       });
-
       const result = await response.json();
-
       if (result.success) {
         setDotStatus(item.filename, 'done');
-        setDriveStatus('success', `<i class="ti ti-circle-check"></i> ${item.filename} guardada en Drive`);
-      } else {
-        throw new Error(result.error || 'Error desconocido');
-      }
-
-    } catch (err) {
+        setDriveStatus('success', `<i class="ti ti-circle-check"></i> ${item.filename} guardada`);
+      } else { throw new Error(result.error || 'Error desconocido'); }
+    } catch(err) {
       setDotStatus(item.filename, 'error');
-      setDriveStatus('error', `<i class="ti ti-alert-circle"></i> Error al subir ${item.filename} — se reintentará`);
-      // Reintentar al final de la cola
+      setDriveStatus('error', `<i class="ti ti-alert-circle"></i> Error — se reintentará`);
       uploadQueue.push(item);
     }
-
     uploadQueue.shift();
     updateQueueInfo();
     setTimeout(processQueue, 500);
@@ -580,19 +642,17 @@
   }
 
   function updateQueueInfo() {
+    const qi = document.getElementById('queue-info');
     if (uploadQueue.length > 1) {
-      queueInfo.style.display = 'block';
-      queueText.textContent = `${uploadQueue.length} fotos en cola`;
-    } else {
-      queueInfo.style.display = 'none';
-    }
+      qi.style.display = 'block';
+      document.getElementById('queue-text').textContent = `${uploadQueue.length} fotos en cola`;
+    } else { qi.style.display = 'none'; }
   }
 
-  // ── Galería ────────────────────────────────────────────────
+  // ── Galería ───────────────────────────────────────────────────────────────────
   document.getElementById('upload-btn').addEventListener('click', () => {
     document.getElementById('file-input').click();
   });
-
   document.getElementById('file-input').addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
@@ -601,7 +661,7 @@
       photoCount++;
       countEl.textContent = photoCount;
       const session  = document.getElementById('cfg-session').value || 'Proyecto_001';
-      const filename = `${session}_${String(photoCount).padStart(3, '0')}.jpg`;
+      const filename = `${session}_${String(photoCount).padStart(3,'0')}.jpg`;
       addThumb(ev.target.result, filename);
       enqueueUpload(ev.target.result, filename, session);
     };
@@ -609,50 +669,36 @@
     e.target.value = '';
   });
 
-  // ── Config ─────────────────────────────────────────────────
+  // ── Config ────────────────────────────────────────────────────────────────────
   function toggleConfig() {
     document.getElementById('config-panel').classList.toggle('open');
   }
-
   function updateSession() {
     const val = document.getElementById('cfg-session').value || 'Proyecto_001';
     document.getElementById('session-text').textContent = val;
   }
-
   function toggleEdit() {
-    const row = document.getElementById('edit-row');
+    const row   = document.getElementById('edit-row');
     const input = document.getElementById('new-project-input');
     const visible = row.style.display === 'flex';
     row.style.display = visible ? 'none' : 'flex';
-    if (!visible) {
-      input.value = document.getElementById('cfg-session').value || 'Proyecto_001';
-      input.focus();
-      input.select();
-    }
+    if (!visible) { input.value = document.getElementById('cfg-session').value; input.focus(); input.select(); }
   }
-
   function applyProject() {
-    const input = document.getElementById('new-project-input');
-    const val = input.value.trim().replace(/\s+/g, '_') || 'Proyecto_001';
+    const val = document.getElementById('new-project-input').value.trim().replace(/\s+/g,'_') || 'Proyecto_001';
     document.getElementById('cfg-session').value = val;
     document.getElementById('session-text').textContent = val;
     document.getElementById('edit-row').style.display = 'none';
-    // Resetear contador para el nuevo proyecto
-    photoCount = 0;
-    countEl.textContent = '0';
-    // Limpiar miniaturas
+    photoCount = 0; countEl.textContent = '0';
     thumbRow.innerHTML = '<div id="empty-thumbs">Las fotos tomadas aparecerán aquí</div>';
-    setDriveStatus('', '<i class="ti ti-cloud" aria-hidden="true"></i> <span>Proyecto cambiado a: ' + val + '</span>');
+    setDriveStatus('', `<i class="ti ti-cloud"></i> Proyecto: ${val}`);
   }
-
-  // Permitir Enter en el input de proyecto
   document.getElementById('new-project-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') applyProject();
   });
 
-  // ── Inicio ─────────────────────────────────────────────────
+  // ── Inicio ────────────────────────────────────────────────────────────────────
   startCamera();
 </script>
-
 </body>
 </html>
