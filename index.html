@@ -352,10 +352,17 @@
   </div>
 
   <div id="session-card">
-    <div id="session-label">Sesión activa</div>
+    <div id="session-label">Proyecto activo</div>
     <div id="session-name">
       <i class="ti ti-folder" aria-hidden="true"></i>
-      <span id="session-text">Muestra_001</span>
+      <span id="session-text">Proyecto_001</span>
+      <button id="edit-btn" onclick="toggleEdit()" title="Cambiar proyecto" style="margin-left:auto; background:none; border:none; cursor:pointer; padding:2px 6px; border-radius:6px; color:#888; font-size:13px;">
+        <i class="ti ti-pencil" aria-hidden="true"></i> Cambiar
+      </button>
+    </div>
+    <div id="edit-row" style="display:none; margin-top:8px; display:none; gap:6px; align-items:center; flex-direction:row;">
+      <input type="text" id="new-project-input" placeholder="Ej: Finca_San_Juan" style="flex:1; font-size:13px; padding:7px 10px; border:0.5px solid #ccc; border-radius:8px; background:#fafafa; color:#1a1a1a; width:100%;">
+      <button onclick="applyProject()" style="padding:7px 14px; font-size:13px; background:#1a1a1a; color:#fff; border:none; border-radius:8px; cursor:pointer; white-space:nowrap;">Aplicar</button>
     </div>
   </div>
 
@@ -396,8 +403,8 @@
 
   <div id="config-panel">
     <div class="config-row">
-      <label>Nombre de sesión / muestra</label>
-      <input type="text" id="cfg-session" value="Muestra_001" oninput="updateSession()">
+      <label>Nombre de proyecto</label>
+      <input type="text" id="cfg-session" value="Proyecto_001" oninput="updateSession()">
     </div>
     <div class="config-row">
       <label>Resolución de captura</label>
@@ -406,7 +413,7 @@
         <option value="medium">Media</option>
       </select>
     </div>
-    <p class="note">Las fotos se guardan en Google Drive → GrainAnalyzer_Fotos → [nombre de sesión]</p>
+    <p class="note">Las fotos se guardan en Google Drive → GrainAnalyzer_Fotos → [nombre de proyecto]</p>
   </div>
 
 </div>
@@ -477,7 +484,7 @@
     photoCount++;
     countEl.textContent = photoCount;
 
-    const session  = document.getElementById('cfg-session').value || 'Muestra_001';
+    const session  = document.getElementById('cfg-session').value || 'Proyecto_001';
     const filename = `${session}_${String(photoCount).padStart(3, '0')}.jpg`;
     const dataUrl  = canvas.toDataURL('image/jpeg', 0.92);
 
@@ -593,7 +600,7 @@
     reader.onload = ev => {
       photoCount++;
       countEl.textContent = photoCount;
-      const session  = document.getElementById('cfg-session').value || 'Muestra_001';
+      const session  = document.getElementById('cfg-session').value || 'Proyecto_001';
       const filename = `${session}_${String(photoCount).padStart(3, '0')}.jpg`;
       addThumb(ev.target.result, filename);
       enqueueUpload(ev.target.result, filename, session);
@@ -608,9 +615,40 @@
   }
 
   function updateSession() {
-    const val = document.getElementById('cfg-session').value || 'Muestra_001';
+    const val = document.getElementById('cfg-session').value || 'Proyecto_001';
     document.getElementById('session-text').textContent = val;
   }
+
+  function toggleEdit() {
+    const row = document.getElementById('edit-row');
+    const input = document.getElementById('new-project-input');
+    const visible = row.style.display === 'flex';
+    row.style.display = visible ? 'none' : 'flex';
+    if (!visible) {
+      input.value = document.getElementById('cfg-session').value || 'Proyecto_001';
+      input.focus();
+      input.select();
+    }
+  }
+
+  function applyProject() {
+    const input = document.getElementById('new-project-input');
+    const val = input.value.trim().replace(/\s+/g, '_') || 'Proyecto_001';
+    document.getElementById('cfg-session').value = val;
+    document.getElementById('session-text').textContent = val;
+    document.getElementById('edit-row').style.display = 'none';
+    // Resetear contador para el nuevo proyecto
+    photoCount = 0;
+    countEl.textContent = '0';
+    // Limpiar miniaturas
+    thumbRow.innerHTML = '<div id="empty-thumbs">Las fotos tomadas aparecerán aquí</div>';
+    setDriveStatus('', '<i class="ti ti-cloud" aria-hidden="true"></i> <span>Proyecto cambiado a: ' + val + '</span>');
+  }
+
+  // Permitir Enter en el input de proyecto
+  document.getElementById('new-project-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') applyProject();
+  });
 
   // ── Inicio ─────────────────────────────────────────────────
   startCamera();
