@@ -58,89 +58,46 @@
     /* ── Semáforo de exposición ── */
     #exposure-meter {
       position: absolute;
-      top: 12px;
-      right: 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-      pointer-events: none;
-      z-index: 10;
+      top: 12px; right: 12px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 5px;
+      pointer-events: none; z-index: 10;
     }
     .traffic-light {
-      width: 22px;
-      background: rgba(0,0,0,0.55);
-      border-radius: 12px;
-      padding: 5px 4px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
+      width: 22px; background: rgba(0,0,0,0.55);
+      border-radius: 12px; padding: 5px 4px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 5px;
       border: 0.5px solid rgba(255,255,255,0.15);
     }
-    .tl-dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      transition: opacity 0.25s, box-shadow 0.25s;
-    }
+    .tl-dot { width: 14px; height: 14px; border-radius: 50%; transition: opacity 0.25s, box-shadow 0.25s; }
     .tl-dot.red    { background: #E24B4A; }
     .tl-dot.yellow { background: #EF9F27; }
     .tl-dot.green  { background: #639922; }
     .tl-dot.inactive { opacity: 0.18; }
-    .tl-dot.active  { opacity: 1; box-shadow: 0 0 6px currentColor; }
+    .tl-dot.active   { opacity: 1; box-shadow: 0 0 6px currentColor; }
 
     #exposure-label {
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      color: #fff;
-      background: rgba(0,0,0,0.55);
-      padding: 2px 6px;
-      border-radius: 5px;
-      white-space: nowrap;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
+      color: #fff; background: rgba(0,0,0,0.55);
+      padding: 2px 6px; border-radius: 5px; white-space: nowrap;
       border: 0.5px solid rgba(255,255,255,0.15);
     }
 
-    /* ── Aviso de alerta en overlay ── */
+    /* ── Aviso flotante ── */
     #exposure-alert {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      padding: 8px 12px;
-      font-size: 12px;
-      font-weight: 500;
-      text-align: center;
-      display: none;
-      pointer-events: none;
-      transition: opacity 0.3s;
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 8px 12px; font-size: 12px; font-weight: 500;
+      text-align: center; display: none; pointer-events: none; transition: opacity 0.3s;
     }
     #exposure-alert.show { display: block; }
-    #exposure-alert.alert-dark {
-      background: rgba(0, 0, 0, 0.72);
-      color: #EF9F27;
-    }
-    #exposure-alert.alert-over {
-      background: rgba(226, 75, 74, 0.72);
-      color: #fff;
-    }
-    #exposure-alert.alert-ok {
-      background: rgba(99, 153, 34, 0.55);
-      color: #fff;
-    }
+    #exposure-alert.alert-dark  { background: rgba(0,0,0,0.72); color: #EF9F27; }
+    #exposure-alert.alert-over  { background: rgba(226,75,74,0.72); color: #fff; }
+    #exposure-alert.alert-ok    { background: rgba(99,153,34,0.55); color: #fff; }
 
-    #flash {
-      position: absolute; inset: 0; background: white;
-      opacity: 0; pointer-events: none; transition: opacity 0.05s;
-    }
-    #cam-label {
-      position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
-      font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap;
-    }
-    #no-cam {
-      position: absolute; inset: 0; display: flex;
-      flex-direction: column; align-items: center; justify-content: center;
-      gap: 8px; color: rgba(255,255,255,0.4); font-size: 13px;
-    }
+    #flash { position: absolute; inset: 0; background: white; opacity: 0; pointer-events: none; transition: opacity 0.05s; }
+    #cam-label { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap; }
+    #no-cam { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: rgba(255,255,255,0.4); font-size: 13px; }
     #no-cam i { font-size: 32px; }
 
     /* ── Controles de imagen ── */
@@ -149,145 +106,88 @@
       border-radius: 14px; padding: 0.85rem 1rem;
       display: flex; flex-direction: column; gap: 10px;
     }
-    #img-controls-header {
-      display: flex; align-items: center;
-      justify-content: space-between;
-    }
-    #img-controls-header span {
-      font-size: 12px; font-weight: 600; color: #555;
-      text-transform: uppercase; letter-spacing: 0.05em;
-    }
-    #reset-img-btn {
-      font-size: 11px; color: #888; background: #f0f0eb;
-      border: 0.5px solid #ddd; border-radius: 6px;
-      padding: 2px 10px; cursor: pointer;
-    }
-    .ctrl-row {
-      display: flex; align-items: center; gap: 10px;
-    }
-    .ctrl-row label {
-      font-size: 12px; color: #666; width: 82px; flex-shrink: 0;
-    }
-    .ctrl-row input[type=range] {
-      flex: 1; accent-color: #4338ca; height: 4px;
-    }
-    .ctrl-row .val {
-      font-size: 12px; color: #333; font-weight: 600;
-      width: 34px; text-align: right; flex-shrink: 0;
+    #img-controls-header { display: flex; align-items: center; justify-content: space-between; }
+    #img-controls-header span { font-size: 12px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.05em; }
+    #reset-img-btn { font-size: 11px; color: #888; background: #f0f0eb; border: 0.5px solid #ddd; border-radius: 6px; padding: 2px 10px; cursor: pointer; }
+
+    .ctrl-row { display: flex; align-items: center; gap: 10px; }
+    .ctrl-row label { font-size: 12px; color: #666; width: 90px; flex-shrink: 0; }
+    .ctrl-row input[type=range] { flex: 1; accent-color: #4338ca; height: 4px; }
+    .ctrl-row .val { font-size: 12px; color: #333; font-weight: 600; width: 40px; text-align: right; flex-shrink: 0; }
+
+    /* ── Separador de sección dentro del panel ── */
+    .ctrl-section-label {
+      font-size: 10px; font-weight: 600; color: #aaa;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      border-top: 0.5px solid #eee; padding-top: 8px; margin-top: 2px;
     }
 
-    /* ── Indicador de calidad de imagen ── */
+    /* ── Indicador de calidad ── */
     #quality-indicator {
-      border-radius: 10px;
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      font-weight: 500;
+      border-radius: 10px; padding: 10px 14px;
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; font-weight: 500;
       border: 0.5px solid transparent;
       transition: background 0.3s, border-color 0.3s, color 0.3s;
     }
-    #quality-indicator.q-good {
-      background: #EAF3DE; color: #3B6D11; border-color: #C0DD97;
-    }
-    #quality-indicator.q-warn {
-      background: #FAEEDA; color: #854F0B; border-color: #FAC775;
-    }
-    #quality-indicator.q-bad {
-      background: #FCEBEB; color: #A32D2D; border-color: #F7C1C1;
-    }
-    #quality-indicator.q-idle {
-      background: #f0f0eb; color: #888; border-color: #ddd;
-    }
-    #quality-indicator i {
-      font-size: 18px; flex-shrink: 0;
-    }
-    #quality-details {
-      display: flex; flex-direction: column; gap: 1px;
-    }
+    #quality-indicator.q-good  { background: #EAF3DE; color: #3B6D11; border-color: #C0DD97; }
+    #quality-indicator.q-warn  { background: #FAEEDA; color: #854F0B; border-color: #FAC775; }
+    #quality-indicator.q-bad   { background: #FCEBEB; color: #A32D2D; border-color: #F7C1C1; }
+    #quality-indicator.q-idle  { background: #f0f0eb; color: #888;    border-color: #ddd; }
+    #quality-indicator i { font-size: 18px; flex-shrink: 0; }
+    #quality-details { display: flex; flex-direction: column; gap: 1px; }
     #quality-title { font-weight: 600; font-size: 13px; }
     #quality-hint  { font-size: 11px; opacity: 0.8; }
 
-    /* ── Histograma mini ── */
-    #histogram-wrap {
-      display: flex; flex-direction: column; gap: 4px;
+    /* ── Soft-focus badge ── */
+    #softfocus-badge {
+      display: none; align-items: center; gap: 6px;
+      background: #EDE9FE; border: 0.5px solid #AFA9EC;
+      border-radius: 8px; padding: 6px 10px;
+      font-size: 12px; color: #3C3489; font-weight: 500;
     }
-    #histogram-label {
-      font-size: 11px; color: #aaa;
-    }
-    #histogram {
-      width: 100%; height: 40px; border-radius: 6px;
-      border: 0.5px solid #eee; background: #1a1a1a;
-    }
+    #softfocus-badge.show { display: flex; }
+    #softfocus-badge i { font-size: 14px; }
+
+    /* ── Histograma ── */
+    #histogram-wrap { display: flex; flex-direction: column; gap: 4px; }
+    #histogram-label { font-size: 11px; color: #aaa; }
+    #histogram { width: 100%; height: 40px; border-radius: 6px; border: 0.5px solid #eee; background: #1a1a1a; }
 
     /* ── Session card ── */
-    #session-card {
-      background: #fff; border: 0.5px solid #ddd;
-      border-radius: 14px; padding: 0.75rem 1rem;
-    }
+    #session-card { background: #fff; border: 0.5px solid #ddd; border-radius: 14px; padding: 0.75rem 1rem; }
     #session-label { font-size: 11px; color: #999; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
     #session-name { font-size: 14px; color: #1a1a1a; font-weight: 500; display: flex; align-items: center; gap: 6px; }
     #session-name i { font-size: 15px; color: #888; }
-    #edit-row { display: none; margin-top: 8px; gap: 6px; align-items: center; flex-direction: row; }
-    #new-project-input {
-      flex: 1; font-size: 13px; padding: 7px 10px;
-      border: 0.5px solid #ccc; border-radius: 8px;
-      background: #fafafa; color: #1a1a1a; width: 100%;
-    }
+    #edit-row { display: none; margin-top: 8px; gap: 6px; align-items: center; }
+    #new-project-input { flex: 1; font-size: 13px; padding: 7px 10px; border: 0.5px solid #ccc; border-radius: 8px; background: #fafafa; color: #1a1a1a; width: 100%; }
 
     /* ── Controls ── */
-    #controls {
-      display: flex; align-items: center;
-      justify-content: space-between; padding: 0.25rem 0;
-    }
+    #controls { display: flex; align-items: center; justify-content: space-between; padding: 0.25rem 0; }
     #counter-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 48px; }
     #count { font-size: 28px; font-weight: 500; color: #1a1a1a; line-height: 1; }
     #count-label { font-size: 11px; color: #888; }
 
-    #shutter {
-      width: 72px; height: 72px; border-radius: 50%;
-      background: #fff; border: 3px solid #aaa;
-      cursor: pointer; display: flex; align-items: center;
-      justify-content: center; transition: transform 0.1s, background 0.1s;
-    }
+    #shutter { width: 72px; height: 72px; border-radius: 50%; background: #fff; border: 3px solid #aaa; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.1s, background 0.1s; }
     #shutter:active { transform: scale(0.93); background: #f0f0f0; }
     #shutter-inner { width: 56px; height: 56px; border-radius: 50%; background: #1a1a1a; opacity: 0.08; }
+    #shutter.shutter-warn { border-color: #EF9F27; }
+    #shutter.shutter-bad  { border-color: #E24B4A; }
+    #shutter.shutter-good { border-color: #639922; }
 
-    /* Shutter con color de semáforo */
-    #shutter.shutter-warn  { border-color: #EF9F27; }
-    #shutter.shutter-bad   { border-color: #E24B4A; }
-    #shutter.shutter-good  { border-color: #639922; }
-
-    #upload-btn {
-      display: flex; flex-direction: column; align-items: center;
-      gap: 3px; cursor: pointer; background: none;
-      border: none; padding: 0; min-width: 48px;
-    }
+    #upload-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; background: none; border: none; padding: 0; min-width: 48px; }
     #upload-btn i { font-size: 24px; color: #888; }
     #upload-btn span { font-size: 11px; color: #888; }
 
     /* ── Thumbnails ── */
-    #thumb-row {
-      display: flex; gap: 6px; overflow-x: auto;
-      padding-bottom: 2px; min-height: 60px; align-items: center;
-    }
+    #thumb-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; min-height: 60px; align-items: center; }
     #thumb-row::-webkit-scrollbar { display: none; }
     .thumb-wrap { position: relative; flex-shrink: 0; }
     .thumb { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; border: 0.5px solid #ddd; display: block; }
-
-    /* Badge de calidad en miniatura */
-    .thumb-quality-badge {
-      position: absolute;
-      top: 3px; left: 3px;
-      font-size: 9px; font-weight: 700;
-      padding: 1px 5px; border-radius: 4px;
-      border: 1px solid rgba(255,255,255,0.6);
-    }
+    .thumb-quality-badge { position: absolute; top: 3px; left: 3px; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.6); }
     .tqb-ok   { background: rgba(99,153,34,0.85);  color: #fff; }
     .tqb-warn { background: rgba(239,159,39,0.85); color: #fff; }
     .tqb-bad  { background: rgba(226,75,74,0.85);  color: #fff; }
-
     .status-dot { position: absolute; bottom: 4px; right: 4px; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #fff; }
     .dot-uploading { background: #EF9F27; }
     .dot-done      { background: #639922; }
@@ -295,24 +195,14 @@
     #empty-thumbs  { font-size: 12px; color: #bbb; width: 100%; text-align: center; }
 
     /* ── Drive status ── */
-    #drive-status {
-      background: #f0f0eb; border-radius: 8px; padding: 0.6rem 0.9rem;
-      display: flex; align-items: center; gap: 8px;
-      font-size: 13px; color: #666;
-      border: 0.5px solid #ddd; min-height: 40px;
-    }
+    #drive-status { background: #f0f0eb; border-radius: 8px; padding: 0.6rem 0.9rem; display: flex; align-items: center; gap: 8px; font-size: 13px; color: #666; border: 0.5px solid #ddd; min-height: 40px; }
     #drive-status i { font-size: 16px; flex-shrink: 0; }
     #drive-status.uploading { border-color:#EF9F27; color:#854F0B; background:#FAEEDA; }
     #drive-status.success   { border-color:#639922; color:#3B6D11; background:#EAF3DE; }
     #drive-status.error     { border-color:#E24B4A; color:#A32D2D; background:#FCEBEB; }
 
     /* ── Config ── */
-    #config-btn {
-      width: 100%; display: flex; align-items: center;
-      justify-content: center; gap: 6px; padding: 0.6rem;
-      font-size: 13px; color: #666; background: none;
-      border: 0.5px solid #ddd; border-radius: 8px; cursor: pointer;
-    }
+    #config-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0.6rem; font-size: 13px; color: #666; background: none; border: 0.5px solid #ddd; border-radius: 8px; cursor: pointer; }
     #config-btn:hover { background: #f0f0eb; }
     #config-panel { display: none; background: #fff; border: 0.5px solid #ddd; border-radius: 14px; padding: 1rem; gap: 12px; flex-direction: column; }
     #config-panel.open { display: flex; }
@@ -321,6 +211,20 @@
     .config-row input, .config-row select { font-size: 13px; padding: 8px 10px; border: 0.5px solid #ccc; border-radius: 8px; width: 100%; background: #fafafa; color: #1a1a1a; }
     .note { font-size: 12px; color: #aaa; padding: 0.5rem 0; border-top: 0.5px solid #eee; line-height: 1.5; }
     #queue-info { font-size: 11px; color: #aaa; text-align: center; }
+
+    /* ── Preset buttons ── */
+    .preset-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .preset-btn {
+      flex: 1; min-width: 80px;
+      font-size: 11px; font-weight: 600;
+      padding: 6px 8px; border-radius: 8px;
+      border: 0.5px solid #ddd; background: #f8f8f5;
+      color: #555; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      text-align: center;
+    }
+    .preset-btn:hover  { background: #eee; }
+    .preset-btn.active { background: #4338ca; color: #fff; border-color: #4338ca; }
   </style>
 </head>
 <body>
@@ -335,13 +239,10 @@
     <video id="video" autoplay playsinline muted></video>
     <canvas id="preview"></canvas>
     <canvas id="canvas"></canvas>
-
     <div id="overlay">
       <div class="corner tl"></div><div class="corner tr"></div>
       <div class="corner bl"></div><div class="corner br"></div>
     </div>
-
-    <!-- Semáforo de exposición -->
     <div id="exposure-meter">
       <div class="traffic-light">
         <div class="tl-dot red    inactive" id="tl-red"></div>
@@ -350,10 +251,7 @@
       </div>
       <div id="exposure-label">—</div>
     </div>
-
-    <!-- Aviso flotante en el preview -->
     <div id="exposure-alert"></div>
-
     <div id="flash"></div>
     <div id="no-cam">
       <i class="ti ti-camera-off"></i>
@@ -378,32 +276,59 @@
       </div>
     </div>
 
+    <!-- ── NUEVO: Presets de cámara ── -->
+    <div class="ctrl-section-label">Presets por cámara</div>
+    <div class="preset-row">
+      <button class="preset-btn" id="preset-none"    onclick="applyPreset('none')">Sin ajuste</button>
+      <button class="preset-btn" id="preset-iphone"  onclick="applyPreset('iphone')">📱 iPhone</button>
+      <button class="preset-btn" id="preset-a26"     onclick="applyPreset('a26')">📱 A26</button>
+      <button class="preset-btn" id="preset-redmi"   onclick="applyPreset('redmi')">📱 Redmi</button>
+    </div>
+
+    <!-- Exposición y brillo -->
+    <div class="ctrl-section-label">Exposición y brillo</div>
     <div class="ctrl-row">
       <label>💡 Brillo</label>
-      <input type="range" id="ctrl-brightness" min="-100" max="100" value="0" step="1"
-             oninput="updateFilter()">
+      <input type="range" id="ctrl-brightness" min="-100" max="100" value="0" step="1" oninput="updateFilter()">
       <span class="val" id="val-brightness">0</span>
     </div>
     <div class="ctrl-row">
       <label>🔆 Contraste</label>
-      <input type="range" id="ctrl-contrast" min="-100" max="100" value="0" step="1"
-             oninput="updateFilter()">
+      <input type="range" id="ctrl-contrast" min="-100" max="100" value="0" step="1" oninput="updateFilter()">
       <span class="val" id="val-contrast">0</span>
     </div>
     <div class="ctrl-row">
       <label>🌡️ Exposición</label>
-      <input type="range" id="ctrl-exposure" min="-1.5" max="1.5" value="0" step="0.05"
-             oninput="updateFilter()">
+      <input type="range" id="ctrl-exposure" min="-1.5" max="1.5" value="0" step="0.05" oninput="updateFilter()">
       <span class="val" id="val-exposure">0.00</span>
+    </div>
+
+    <!-- ── NUEVO: Temperatura de color ── -->
+    <div class="ctrl-section-label">Color</div>
+    <div class="ctrl-row">
+      <label>🌡 Temperatura</label>
+      <input type="range" id="ctrl-temp" min="-80" max="80" value="0" step="1" oninput="updateFilter()">
+      <span class="val" id="val-temp">0</span>
     </div>
     <div class="ctrl-row">
       <label>🎨 Saturación</label>
-      <input type="range" id="ctrl-saturation" min="-100" max="100" value="0" step="1"
-             oninput="updateFilter()">
+      <input type="range" id="ctrl-saturation" min="-100" max="100" value="0" step="1" oninput="updateFilter()">
       <span class="val" id="val-saturation">0</span>
     </div>
 
-    <!-- Histograma mini -->
+    <!-- ── NUEVO: Soft-focus / suavizado de bordes ── -->
+    <div class="ctrl-section-label">Morphología</div>
+    <div class="ctrl-row">
+      <label>🔵 Suavizado</label>
+      <input type="range" id="ctrl-blur" min="0" max="4" value="0" step="1" oninput="updateFilter()">
+      <span class="val" id="val-blur">0</span>
+    </div>
+    <div id="softfocus-badge">
+      <i class="ti ti-circle-check"></i>
+      <span>Suavizado activo — mejora circularidad en iPhone</span>
+    </div>
+
+    <!-- Histograma -->
     <div id="histogram-wrap">
       <span id="histogram-label">Histograma</span>
       <canvas id="histogram" width="380" height="40"></canvas>
@@ -485,14 +410,58 @@
   let uploadQueue = [];
   let isUploading = false;
   let animFrameId = null;
-
-  // Estado del semáforo (persistente entre frames)
-  let exposureState = 'idle'; // 'idle' | 'good' | 'warn-dark' | 'warn-over' | 'bad-dark' | 'bad-over'
+  let exposureState = 'idle';
   let _histTimer    = 0;
   let _alertTimer   = null;
   let _lastAlertShown = 0;
+  let activePreset  = 'none';
 
-  let imgParams = { brightness: 0, contrast: 0, exposure: 0, saturation: 0 };
+  // ── Parámetros de imagen (AMPLIADOS) ────────────────────────────────────────
+  // temp: temperatura de color  (-80 frío / +80 cálido)
+  // blur: suavizado de bordes    (0 = off, 1–4 = radio en px)
+  let imgParams = { brightness: 0, contrast: 0, exposure: 0, saturation: 0, temp: 0, blur: 0 };
+
+  // ── Presets por cámara ──────────────────────────────────────────────────────
+  // iPhone: leve suavizado (blur 1) para mejorar circularidad; sin cambio de color
+  // A26:    temperatura -25 (más frío/neutro) para contrarrestar el amarillamiento del LED
+  //         exposición -0.20 para reducir sobreexposición en granos blancos
+  // Redmi:  temperatura -30 + exposición -0.25 (tiende a saturar en blanco igual que A26)
+  const PRESETS = {
+    none:   { brightness: 0,  contrast: 0, exposure:  0.00, saturation: 0, temp:   0, blur: 0 },
+    iphone: { brightness: 0,  contrast: 0, exposure:  0.00, saturation: 0, temp:   0, blur: 1 },
+    a26:    { brightness: 0,  contrast: 5, exposure: -0.20, saturation: 0, temp: -25, blur: 0 },
+    redmi:  { brightness: -5, contrast: 0, exposure: -0.25, saturation: 0, temp: -30, blur: 0 },
+  };
+
+  function applyPreset(name) {
+    activePreset = name;
+    const p = PRESETS[name];
+    imgParams = { ...p };
+
+    document.getElementById('ctrl-brightness').value = p.brightness;
+    document.getElementById('ctrl-contrast').value   = p.contrast;
+    document.getElementById('ctrl-exposure').value   = p.exposure;
+    document.getElementById('ctrl-saturation').value = p.saturation;
+    document.getElementById('ctrl-temp').value       = p.temp;
+    document.getElementById('ctrl-blur').value       = p.blur;
+
+    document.getElementById('val-brightness').textContent = p.brightness;
+    document.getElementById('val-contrast').textContent   = p.contrast;
+    document.getElementById('val-exposure').textContent   = p.exposure.toFixed(2);
+    document.getElementById('val-saturation').textContent = p.saturation;
+    document.getElementById('val-temp').textContent       = p.temp;
+    document.getElementById('val-blur').textContent       = p.blur;
+
+    // Resaltar botón activo
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.getElementById('preset-' + name);
+    if (btn) btn.classList.add('active');
+
+    // Badge suavizado
+    const badge = document.getElementById('softfocus-badge');
+    if (p.blur > 0) badge.classList.add('show');
+    else            badge.classList.remove('show');
+  }
 
   // ── Elementos ───────────────────────────────────────────────────────────────
   const video     = document.getElementById('video');
@@ -508,13 +477,11 @@
   const histogram = document.getElementById('histogram');
   const histCtx   = histogram.getContext('2d');
   const prevCtx   = preview.getContext('2d');
-
-  const tlRed    = document.getElementById('tl-red');
-  const tlYellow = document.getElementById('tl-yellow');
-  const tlGreen  = document.getElementById('tl-green');
-  const expLabel = document.getElementById('exposure-label');
-  const expAlert = document.getElementById('exposure-alert');
-
+  const tlRed     = document.getElementById('tl-red');
+  const tlYellow  = document.getElementById('tl-yellow');
+  const tlGreen   = document.getElementById('tl-green');
+  const expLabel  = document.getElementById('exposure-label');
+  const expAlert  = document.getElementById('exposure-alert');
   const qualityEl    = document.getElementById('quality-indicator');
   const qualityIcon  = document.getElementById('quality-icon');
   const qualityTitle = document.getElementById('quality-title');
@@ -537,7 +504,7 @@
       noCam.style.display = 'none';
       camActive = true;
       badge.textContent = 'Cámara activa';
-      updateQualityCard('idle');
+      updateQualityCard('idle', 'Activando cámara...', 'El semáforo aparece en el visor');
       startPreviewLoop();
     } catch(e) {
       noCam.innerHTML = '<i class="ti ti-camera-off"></i><span>Activa los permisos de cámara</span>';
@@ -549,59 +516,75 @@
   function startPreviewLoop() {
     if (animFrameId) cancelAnimationFrame(animFrameId);
     function loop() {
-      if (!camActive || video.readyState < 2) {
-        animFrameId = requestAnimationFrame(loop); return;
-      }
+      if (!camActive || video.readyState < 2) { animFrameId = requestAnimationFrame(loop); return; }
       const vw = video.videoWidth;
       const vh = video.videoHeight;
       if (!vw || !vh) { animFrameId = requestAnimationFrame(loop); return; }
-
       const container = preview.parentElement;
       const cw = container.clientWidth;
       const ch = container.clientHeight;
       preview.width  = cw;
       preview.height = ch;
-
       const scale = Math.max(cw/vw, ch/vh);
-      const dw = vw * scale;
-      const dh = vh * scale;
-      const dx = (cw - dw) / 2;
-      const dy = (ch - dh) / 2;
-
+      const dw = vw*scale, dh = vh*scale;
+      const dx = (cw-dw)/2, dy = (ch-dh)/2;
       prevCtx.drawImage(video, dx, dy, dw, dh);
       applyFiltersToCanvas(prevCtx, cw, ch);
       analyzeExposure(prevCtx, cw, ch);
-
       animFrameId = requestAnimationFrame(loop);
     }
     loop();
   }
 
-  // ── Aplicar filtros ──────────────────────────────────────────────────────────
+  // ── Aplicar filtros (AMPLIADO con temperatura y blur) ────────────────────────
+  // Temperatura de color:
+  //   valor positivo = más cálido (sube R, baja B)  → corrige imágenes frías/azuladas
+  //   valor negativo = más frío   (baja R, sube B)  → corrige sobreexposición cálida del A26/Redmi
   function applyFiltersToCanvas(ctx, w, h) {
-    const { brightness, contrast, exposure, saturation } = imgParams;
-    if (brightness === 0 && contrast === 0 && exposure === 0 && saturation === 0) return;
+    const { brightness, contrast, exposure, saturation, temp, blur } = imgParams;
+    const noChange = brightness===0 && contrast===0 && exposure===0 && saturation===0 && temp===0 && blur===0;
+    if (noChange) return;
+
+    // Blur (suavizado de bordes) ANTES de leer los píxeles
+    // Usamos filter CSS del canvas solo para el preview; en la captura real lo hacemos por software
+    if (blur > 0) {
+      ctx.filter = `blur(${blur}px)`;
+      ctx.drawImage(preview, 0, 0);
+      ctx.filter = 'none';
+    }
 
     const imageData = ctx.getImageData(0, 0, w, h);
     const data = imageData.data;
-    const bAdd   = brightness * 2.55;
-    const cFactor= (259 * (contrast + 255)) / (255 * (259 - contrast));
-    const expMul = Math.pow(2, exposure);
-    const satF   = (saturation + 100) / 100;
+    const bAdd    = brightness * 2.55;
+    const cFactor = (259*(contrast+255)) / (255*(259-contrast));
+    const expMul  = Math.pow(2, exposure);
+    const satF    = (saturation+100) / 100;
+    // Temperatura: rango -80..+80 → offset de canal de ±40 px de color
+    const tempR   =  temp * 0.5;   // positivo = más rojo
+    const tempB   = -temp * 0.5;   // positivo = menos azul
 
     for (let i = 0; i < data.length; i += 4) {
       let r = data[i], g = data[i+1], b = data[i+2];
-      r = r * expMul; g = g * expMul; b = b * expMul;
+
+      // Exposición
+      r *= expMul; g *= expMul; b *= expMul;
+      // Brillo
       r += bAdd; g += bAdd; b += bAdd;
-      r = cFactor * (r - 128) + 128;
-      g = cFactor * (g - 128) + 128;
-      b = cFactor * (b - 128) + 128;
+      // Contraste
+      r = cFactor*(r-128)+128;
+      g = cFactor*(g-128)+128;
+      b = cFactor*(b-128)+128;
+      // Temperatura de color
+      r += tempR;
+      b += tempB;
+      // Saturación
       if (saturation !== 0) {
         const luma = 0.299*r + 0.587*g + 0.114*b;
-        r = luma + satF * (r - luma);
-        g = luma + satF * (g - luma);
-        b = luma + satF * (b - luma);
+        r = luma + satF*(r-luma);
+        g = luma + satF*(g-luma);
+        b = luma + satF*(b-luma);
       }
+
       data[i]   = Math.max(0, Math.min(255, r));
       data[i+1] = Math.max(0, Math.min(255, g));
       data[i+2] = Math.max(0, Math.min(255, b));
@@ -610,169 +593,96 @@
   }
 
   // ── Análisis de exposición + semáforo ────────────────────────────────────────
-  // Ejecuta cada 12 frames para no sobrecargar el teléfono.
-  // Calcula:
-  //  - luma promedio de la imagen (luminosidad media)
-  //  - % de píxeles muy oscuros (< 30) → imagen oscura
-  //  - % de píxeles muy brillantes (> 240) → sobreexpuesta
-  //  - distribución del histograma para dibujo
-
   function analyzeExposure(ctx, w, h) {
     _histTimer++;
     if (_histTimer % 12 !== 0) return;
-
     const sample = ctx.getImageData(0, 0, w, h);
     const d = sample.data;
     const bins = new Uint32Array(256);
-    let lumaSum = 0;
-    let totalPx = 0;
-
-    // Muestra cada 8 px para velocidad
+    let lumaSum = 0, totalPx = 0;
     for (let i = 0; i < d.length; i += 32) {
       const luma = (d[i]*77 + d[i+1]*150 + d[i+2]*29) >> 8;
-      bins[luma]++;
-      lumaSum += luma;
-      totalPx++;
+      bins[luma]++; lumaSum += luma; totalPx++;
     }
-
     const avgLuma = lumaSum / totalPx;
-
-    // Porcentaje de píxeles muy oscuros (< 30) y muy brillantes (> 240)
-    const darkPx  = bins.slice(0, 30).reduce((a,b) => a+b, 0);
-    const overPx  = bins.slice(240).reduce((a,b) => a+b, 0);
+    const darkPx  = bins.slice(0,30).reduce((a,b)=>a+b,0);
+    const overPx  = bins.slice(240).reduce((a,b)=>a+b,0);
     const darkPct = darkPx / totalPx;
     const overPct = overPx / totalPx;
-
-    // ── Clasificación ──────────────────────────────────────────────────────
-    // ROJO: imagen claramente inutilizable
-    //   - Muy oscura: luma < 45 o más del 60% de píxeles muy oscuros
-    //   - Sobreexpuesta: más del 25% de píxeles saturados
-    // AMARILLO: imagen usable pero al límite
-    //   - Oscura: luma 45–80 o 30–60% oscuros
-    //   - Algo sobreexpuesta: 10–25% saturados
-    // VERDE: imagen correcta para análisis
-
     let newState;
-    if (avgLuma < 45 || darkPct > 0.60) {
-      newState = 'bad-dark';
-    } else if (overPct > 0.25) {
-      newState = 'bad-over';
-    } else if (avgLuma < 80 || darkPct > 0.30) {
-      newState = 'warn-dark';
-    } else if (overPct > 0.10) {
-      newState = 'warn-over';
-    } else {
-      newState = 'good';
-    }
-
+    if      (avgLuma < 45 || darkPct > 0.60) newState = 'bad-dark';
+    else if (overPct > 0.25)                  newState = 'bad-over';
+    else if (avgLuma < 80 || darkPct > 0.30) newState = 'warn-dark';
+    else if (overPct > 0.10)                  newState = 'warn-over';
+    else                                       newState = 'good';
     updateTrafficLight(newState);
     drawHistogramData(bins, totalPx, overPct);
     exposureState = newState;
   }
 
-  // ── Actualizar semáforo visual ────────────────────────────────────────────
   function updateTrafficLight(state) {
     tlRed.className    = 'tl-dot red    inactive';
     tlYellow.className = 'tl-dot yellow inactive';
     tlGreen.className  = 'tl-dot green  inactive';
-    expAlert.className = '';
-    expAlert.textContent = '';
-
+    expAlert.className = ''; expAlert.textContent = '';
     if (state === 'bad-dark') {
-      tlRed.className = 'tl-dot red active';
-      expLabel.textContent = 'OSCURO';
+      tlRed.className = 'tl-dot red active'; expLabel.textContent = 'OSCURO';
       shutter.className = 'shutter-bad';
       showAlert('alert-dark', '⚠️  Imagen muy oscura — sube la exposición o el brillo');
       updateQualityCard('bad', 'Imagen muy oscura', 'Sube la exposición o el brillo del slider');
-
     } else if (state === 'bad-over') {
-      tlRed.className = 'tl-dot red active';
-      expLabel.textContent = 'SOBRE';
+      tlRed.className = 'tl-dot red active'; expLabel.textContent = 'SOBRE';
       shutter.className = 'shutter-bad';
       showAlert('alert-over', '⚠️  Sobreexpuesta — baja la exposición o aleja la luz');
-      updateQualityCard('bad', 'Sobreexpuesta', 'Baja la exposición o aleja la fuente de luz');
-
+      updateQualityCard('bad', 'Sobreexpuesta', 'Baja la exposición o usa el preset de tu cámara');
     } else if (state === 'warn-dark') {
-      tlYellow.className = 'tl-dot yellow active';
-      expLabel.textContent = 'DIM';
+      tlYellow.className = 'tl-dot yellow active'; expLabel.textContent = 'DIM';
       shutter.className = 'shutter-warn';
       updateQualityCard('warn', 'Un poco oscura', 'Prueba subir brillo o exposición levemente');
-
     } else if (state === 'warn-over') {
-      tlYellow.className = 'tl-dot yellow active';
-      expLabel.textContent = 'BRILLANTE';
+      tlYellow.className = 'tl-dot yellow active'; expLabel.textContent = 'BRILLANTE';
       shutter.className = 'shutter-warn';
-      updateQualityCard('warn', 'Un poco brillante', 'Prueba bajar la exposición levemente');
-
+      updateQualityCard('warn', 'Un poco brillante', 'Prueba el preset de tu cámara o baja exposición');
     } else if (state === 'good') {
-      tlGreen.className = 'tl-dot green active';
-      expLabel.textContent = 'OK';
+      tlGreen.className = 'tl-dot green active'; expLabel.textContent = 'OK';
       shutter.className = 'shutter-good';
       updateQualityCard('good', 'Exposición correcta', 'Listo para capturar');
     }
   }
 
-  // Muestra el aviso flotante en el viewfinder, se oculta tras 3 s
   function showAlert(cssClass, msg) {
     const now = Date.now();
-    if (now - _lastAlertShown < 5000) return; // no spamear
+    if (now - _lastAlertShown < 5000) return;
     _lastAlertShown = now;
-
-    expAlert.className = cssClass + ' show';
-    expAlert.textContent = msg;
-
+    expAlert.className = cssClass + ' show'; expAlert.textContent = msg;
     if (_alertTimer) clearTimeout(_alertTimer);
-    _alertTimer = setTimeout(() => {
-      expAlert.className = '';
-      expAlert.textContent = '';
-    }, 3500);
+    _alertTimer = setTimeout(() => { expAlert.className = ''; expAlert.textContent = ''; }, 3500);
   }
 
-  // ── Indicador de calidad (panel inferior) ─────────────────────────────────
   function updateQualityCard(level, title, hint) {
-    qualityEl.className = 'quality-indicator';
-    const icons = { idle: 'ti-eye-off', good: 'ti-circle-check', warn: 'ti-alert-triangle', bad: 'ti-alert-circle' };
+    const icons = { idle:'ti-eye-off', good:'ti-circle-check', warn:'ti-alert-triangle', bad:'ti-alert-circle' };
     qualityIcon.className = 'ti ' + (icons[level] || 'ti-eye-off');
-
-    if (level === 'good') {
-      qualityEl.className = 'q-good';
-    } else if (level === 'warn') {
-      qualityEl.className = 'q-warn';
-    } else if (level === 'bad') {
-      qualityEl.className = 'q-bad';
-    } else {
-      qualityEl.className = 'q-idle';
-    }
     qualityEl.id = 'quality-indicator';
-
-    qualityTitle.textContent = title || 'Activando cámara...';
-    qualityHint.textContent  = hint  || 'El semáforo aparece en el visor';
+    qualityEl.className = { good:'q-good', warn:'q-warn', bad:'q-bad', idle:'q-idle' }[level] || 'q-idle';
+    qualityTitle.textContent = title || '';
+    qualityHint.textContent  = hint  || '';
   }
 
-  // ── Histograma mini ──────────────────────────────────────────────────────────
   function drawHistogramData(bins, totalPx, overPct) {
     const max = Math.max(...bins);
-    const hw  = histogram.width;
-    const hh  = histogram.height;
-
-    histCtx.clearRect(0, 0, hw, hh);
-    histCtx.fillStyle = '#1a1a1a';
-    histCtx.fillRect(0, 0, hw, hh);
-
-    const barW = hw / 256;
+    const hw = histogram.width, hh = histogram.height;
+    histCtx.clearRect(0,0,hw,hh);
+    histCtx.fillStyle = '#1a1a1a'; histCtx.fillRect(0,0,hw,hh);
+    const barW = hw/256;
     for (let x = 0; x < 256; x++) {
-      const barH = (bins[x] / max) * hh;
-      const t  = x / 255;
-      const r  = Math.round(t * 255);
-      const g  = Math.round(Math.sin(t * Math.PI) * 200);
-      const bl = Math.round((1-t) * 255);
-      histCtx.fillStyle = `rgba(${r},${g},${bl},0.85)`;
-      histCtx.fillRect(x * barW, hh - barH, barW + 0.5, barH);
+      const barH = (bins[x]/max)*hh;
+      const t = x/255;
+      histCtx.fillStyle = `rgba(${Math.round(t*255)},${Math.round(Math.sin(t*Math.PI)*200)},${Math.round((1-t)*255)},0.85)`;
+      histCtx.fillRect(x*barW, hh-barH, barW+0.5, barH);
     }
-
     if (overPct > 0.10) {
       histCtx.fillStyle = 'rgba(255,50,50,0.35)';
-      histCtx.fillRect(hw * 0.95, 0, hw * 0.05, hh);
+      histCtx.fillRect(hw*0.95, 0, hw*0.05, hh);
       document.getElementById('histogram-label').textContent = 'Histograma ⚠️ Sobreexpuesto';
     } else {
       document.getElementById('histogram-label').textContent = 'Histograma';
@@ -785,35 +695,94 @@
     imgParams.contrast   = parseInt(document.getElementById('ctrl-contrast').value);
     imgParams.exposure   = parseFloat(document.getElementById('ctrl-exposure').value);
     imgParams.saturation = parseInt(document.getElementById('ctrl-saturation').value);
+    imgParams.temp       = parseInt(document.getElementById('ctrl-temp').value);
+    imgParams.blur       = parseInt(document.getElementById('ctrl-blur').value);
 
     document.getElementById('val-brightness').textContent = imgParams.brightness;
     document.getElementById('val-contrast').textContent   = imgParams.contrast;
     document.getElementById('val-exposure').textContent   = imgParams.exposure.toFixed(2);
     document.getElementById('val-saturation').textContent = imgParams.saturation;
+    document.getElementById('val-temp').textContent       = imgParams.temp;
+    document.getElementById('val-blur').textContent       = imgParams.blur;
+
+    // Mostrar/ocultar badge de suavizado
+    const sfb = document.getElementById('softfocus-badge');
+    if (imgParams.blur > 0) sfb.classList.add('show');
+    else sfb.classList.remove('show');
+
+    // Si el usuario mueve un slider manualmente, quitar preset activo
+    // (solo si los valores no coinciden exactamente con el preset actual)
+    const p = PRESETS[activePreset];
+    const coincide = p && Object.keys(p).every(k => imgParams[k] === p[k]);
+    if (!coincide) {
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      activePreset = 'none';
+    }
   }
 
   function resetImgControls() {
-    document.getElementById('ctrl-brightness').value = 0;
-    document.getElementById('ctrl-contrast').value   = 0;
-    document.getElementById('ctrl-exposure').value   = 0;
-    document.getElementById('ctrl-saturation').value = 0;
-    updateFilter();
+    applyPreset('none');
   }
 
   // ── Captura ──────────────────────────────────────────────────────────────────
+  // MEJORA: aplica los filtros (incluyendo blur) al canvas de alta resolución
+  // antes de guardar, NO solo al preview.
   shutter.addEventListener('click', async () => {
     if (!camActive) { await startCamera(); return; }
     takePhoto();
   });
+
+  function applyBlurToCanvas(ctx, w, h, radius) {
+    // Implementación manual de blur de caja (box blur) 3 pasadas = aproxima Gaussiano
+    // Esto funciona sin CSS filter, en el canvas de captura de alta resolución
+    if (radius <= 0) return;
+    const imageData = ctx.getImageData(0, 0, w, h);
+    const src = imageData.data;
+    const tmp = new Uint8ClampedArray(src.length);
+    const r   = Math.round(radius);
+
+    // Pasada horizontal
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        let rSum=0, gSum=0, bSum=0, count=0;
+        for (let dx = -r; dx <= r; dx++) {
+          const nx = Math.max(0, Math.min(w-1, x+dx));
+          const idx = (y*w+nx)*4;
+          rSum+=src[idx]; gSum+=src[idx+1]; bSum+=src[idx+2]; count++;
+        }
+        const oi = (y*w+x)*4;
+        tmp[oi]=rSum/count; tmp[oi+1]=gSum/count; tmp[oi+2]=bSum/count; tmp[oi+3]=src[oi+3];
+      }
+    }
+    // Pasada vertical
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        let rSum=0, gSum=0, bSum=0, count=0;
+        for (let dy = -r; dy <= r; dy++) {
+          const ny = Math.max(0, Math.min(h-1, y+dy));
+          const idx = (ny*w+x)*4;
+          rSum+=tmp[idx]; gSum+=tmp[idx+1]; bSum+=tmp[idx+2]; count++;
+        }
+        const oi = (y*w+x)*4;
+        src[oi]=rSum/count; src[oi+1]=gSum/count; src[oi+2]=bSum/count;
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+  }
 
   function takePhoto() {
     const w = video.videoWidth;
     const h = video.videoHeight;
     canvas.width  = w;
     canvas.height = h;
-
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, w, h);
+
+    // Aplicar blur al canvas de alta resolución (si está activo)
+    if (imgParams.blur > 0) {
+      applyBlurToCanvas(ctx, w, h, imgParams.blur);
+    }
+    // Aplicar resto de filtros de color
     applyFiltersToCanvas(ctx, w, h);
 
     flash.style.opacity = '0.9';
@@ -821,14 +790,10 @@
 
     photoCount++;
     countEl.textContent = photoCount;
-
     const session  = document.getElementById('cfg-session').value || 'Proyecto_001';
     const filename = `${session}_${String(photoCount).padStart(3,'0')}.jpg`;
     const dataUrl  = canvas.toDataURL('image/jpeg', 0.92);
-
-    // Pasar el estado de calidad actual a la miniatura
-    const qState = exposureState;
-    addThumb(dataUrl, filename, qState);
+    addThumb(dataUrl, filename, exposureState);
     enqueueUpload(dataUrl, filename, session);
   }
 
@@ -836,47 +801,23 @@
   function addThumb(dataUrl, filename, qState) {
     const emptyEl = document.getElementById('empty-thumbs');
     if (emptyEl) emptyEl.remove();
-
-    const wrap = document.createElement('div');
-    wrap.className = 'thumb-wrap';
-    wrap.id = 'wrap-' + filename;
-
-    const img = document.createElement('img');
-    img.src = dataUrl; img.className = 'thumb';
-    img.alt = filename; img.title = filename;
-
-    // Badge de calidad sobre la miniatura
+    const wrap   = document.createElement('div'); wrap.className = 'thumb-wrap'; wrap.id = 'wrap-' + filename;
+    const img    = document.createElement('img');  img.src = dataUrl; img.className = 'thumb'; img.alt = filename; img.title = filename;
     const qbadge = document.createElement('div');
     qbadge.className = 'thumb-quality-badge';
-    if (qState === 'good') {
-      qbadge.className += ' tqb-ok';
-      qbadge.textContent = 'OK';
-    } else if (qState === 'warn-dark' || qState === 'warn-over') {
-      qbadge.className += ' tqb-warn';
-      qbadge.textContent = '~OK';
-    } else if (qState === 'bad-dark') {
-      qbadge.className += ' tqb-bad';
-      qbadge.textContent = 'OSC';
-    } else if (qState === 'bad-over') {
-      qbadge.className += ' tqb-bad';
-      qbadge.textContent = 'OVR';
-    }
-
-    const dot = document.createElement('div');
-    dot.className = 'status-dot dot-uploading';
-    dot.id = 'dot-' + filename;
-
-    wrap.appendChild(img);
-    wrap.appendChild(qbadge);
-    wrap.appendChild(dot);
+    if      (qState === 'good')                              { qbadge.className += ' tqb-ok';   qbadge.textContent = 'OK'; }
+    else if (qState === 'warn-dark' || qState === 'warn-over') { qbadge.className += ' tqb-warn'; qbadge.textContent = '~OK'; }
+    else if (qState === 'bad-dark')                          { qbadge.className += ' tqb-bad';  qbadge.textContent = 'OSC'; }
+    else if (qState === 'bad-over')                          { qbadge.className += ' tqb-bad';  qbadge.textContent = 'OVR'; }
+    const dot = document.createElement('div'); dot.className = 'status-dot dot-uploading'; dot.id = 'dot-' + filename;
+    wrap.appendChild(img); wrap.appendChild(qbadge); wrap.appendChild(dot);
     thumbRow.appendChild(wrap);
     thumbRow.scrollLeft = thumbRow.scrollWidth;
   }
 
   function setDotStatus(filename, status) {
     const dot = document.getElementById('dot-' + filename);
-    if (!dot) return;
-    dot.className = 'status-dot ' + (status === 'done' ? 'dot-done' : 'dot-error');
+    if (dot) dot.className = 'status-dot ' + (status === 'done' ? 'dot-done' : 'dot-error');
   }
 
   // ── Cola de subida ────────────────────────────────────────────────────────────
@@ -900,7 +841,7 @@
       if (result.success) {
         setDotStatus(item.filename, 'done');
         setDriveStatus('success', `<i class="ti ti-circle-check"></i> ${item.filename} guardada`);
-      } else { throw new Error(result.error || 'Error desconocido'); }
+      } else throw new Error(result.error || 'Error desconocido');
     } catch(err) {
       setDotStatus(item.filename, 'error');
       setDriveStatus('error', `<i class="ti ti-alert-circle"></i> Error — se reintentará`);
@@ -922,7 +863,7 @@
     if (uploadQueue.length > 1) {
       qi.style.display = 'block';
       document.getElementById('queue-text').textContent = `${uploadQueue.length} fotos en cola`;
-    } else { qi.style.display = 'none'; }
+    } else qi.style.display = 'none';
   }
 
   // ── Galería ───────────────────────────────────────────────────────────────────
@@ -930,12 +871,10 @@
     document.getElementById('file-input').click();
   });
   document.getElementById('file-input').addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const file = e.target.files[0]; if (!file) return;
     const reader = new FileReader();
     reader.onload = ev => {
-      photoCount++;
-      countEl.textContent = photoCount;
+      photoCount++; countEl.textContent = photoCount;
       const session  = document.getElementById('cfg-session').value || 'Proyecto_001';
       const filename = `${session}_${String(photoCount).padStart(3,'0')}.jpg`;
       addThumb(ev.target.result, filename, 'idle');
@@ -945,16 +884,14 @@
     e.target.value = '';
   });
 
-  // ── Config ────────────────────────────────────────────────────────────────────
-  function toggleConfig() {
-    document.getElementById('config-panel').classList.toggle('open');
-  }
+  // ── Config / Proyecto ─────────────────────────────────────────────────────────
+  function toggleConfig() { document.getElementById('config-panel').classList.toggle('open'); }
   function updateSession() {
     const val = document.getElementById('cfg-session').value || 'Proyecto_001';
     document.getElementById('session-text').textContent = val;
   }
   function toggleEdit() {
-    const row   = document.getElementById('edit-row');
+    const row = document.getElementById('edit-row');
     const input = document.getElementById('new-project-input');
     const visible = row.style.display === 'flex';
     row.style.display = visible ? 'none' : 'flex';
