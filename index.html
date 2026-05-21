@@ -7,21 +7,45 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: #f5f5f0;
-      min-height: 100vh;
       display: flex;
       justify-content: center;
     }
     #app {
       max-width: 420px;
       width: 100%;
-      padding: 1rem;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    /* Panel superior fijo — header + visor + controles de disparo */
+    #top-panel {
+      flex-shrink: 0;
+      padding: 1rem 1rem 0;
       display: flex;
       flex-direction: column;
       gap: 12px;
+      background: #f5f5f0;
+      z-index: 10;
     }
+    /* Panel inferior scrolleable — todo lo demás */
+    #scroll-panel {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 1rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      -webkit-overflow-scrolling: touch;
+    }
+    #scroll-panel::-webkit-scrollbar { display: none; }
     #header {
       display: flex;
       align-items: center;
@@ -55,10 +79,9 @@
     .corner.bl { bottom:16px; left:16px; border-width:0 0 2px 2px; border-radius:0 0 0 3px; }
     .corner.br { bottom:16px; right:16px; border-width:0 2px 2px 0; border-radius:0 0 3px 0; }
 
-    /* ── Semáforo de exposición ── */
+    /* ── Semáforo ── */
     #exposure-meter {
-      position: absolute;
-      top: 12px; right: 12px;
+      position: absolute; top: 12px; right: 12px;
       display: flex; flex-direction: column;
       align-items: center; gap: 5px;
       pointer-events: none; z-index: 10;
@@ -76,7 +99,6 @@
     .tl-dot.green  { background: #639922; }
     .tl-dot.inactive { opacity: 0.18; }
     .tl-dot.active   { opacity: 1; box-shadow: 0 0 6px currentColor; }
-
     #exposure-label {
       font-size: 10px; font-weight: 600; letter-spacing: 0.04em;
       color: #fff; background: rgba(0,0,0,0.55);
@@ -84,11 +106,23 @@
       border: 0.5px solid rgba(255,255,255,0.15);
     }
 
+    /* ── RGB live badge ── */
+    #rgb-live {
+      position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+      background: rgba(0,0,0,0.65); border: 0.5px solid rgba(255,255,255,0.15);
+      border-radius: 8px; padding: 4px 10px;
+      display: flex; align-items: center; gap: 8px;
+      pointer-events: none; white-space: nowrap;
+    }
+    .rgb-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .rgb-val { font-size: 11px; font-weight: 600; color: #fff; font-family: monospace; }
+    .rgb-sep { font-size: 10px; color: rgba(255,255,255,0.3); }
+
     /* ── Aviso flotante ── */
     #exposure-alert {
       position: absolute; bottom: 0; left: 0; right: 0;
       padding: 8px 12px; font-size: 12px; font-weight: 500;
-      text-align: center; display: none; pointer-events: none; transition: opacity 0.3s;
+      text-align: center; display: none; pointer-events: none;
     }
     #exposure-alert.show { display: block; }
     #exposure-alert.alert-dark  { background: rgba(0,0,0,0.72); color: #EF9F27; }
@@ -96,9 +130,92 @@
     #exposure-alert.alert-ok    { background: rgba(99,153,34,0.55); color: #fff; }
 
     #flash { position: absolute; inset: 0; background: white; opacity: 0; pointer-events: none; transition: opacity 0.05s; }
-    #cam-label { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap; }
+    #cam-label { position: absolute; bottom: 10px; left: 12px; font-size: 11px; color: rgba(255,255,255,0.4); white-space: nowrap; }
     #no-cam { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: rgba(255,255,255,0.4); font-size: 13px; }
     #no-cam i { font-size: 32px; }
+
+    /* ── Panel de referencia ── */
+    #ref-panel {
+      background: #fff; border: 0.5px solid #ddd;
+      border-radius: 14px; padding: 0.85rem 1rem;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    #ref-panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    #ref-panel-header span { font-size: 12px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* Objetivo RGB */
+    #rgb-target-row {
+      background: #f7f8f5; border: 0.5px solid #ddd;
+      border-radius: 10px; padding: 10px 12px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .rgb-target-label { font-size: 10px; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+    .rgb-channels { display: flex; gap: 8px; }
+    .rgb-ch {
+      flex: 1; display: flex; flex-direction: column; gap: 3px;
+      align-items: center;
+    }
+    .rgb-ch-label { font-size: 10px; font-weight: 700; }
+    .rgb-ch-bar-wrap { width: 100%; height: 6px; background: #e5e5e0; border-radius: 3px; overflow: hidden; }
+    .rgb-ch-bar { height: 100%; border-radius: 3px; transition: width 0.3s; }
+    .rgb-ch-val { font-size: 12px; font-weight: 600; font-family: monospace; }
+    .rgb-ch-target { font-size: 10px; color: #aaa; }
+
+    /* Diferencia de color */
+    #delta-row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    #color-preview-wrap { display: flex; gap: 6px; align-items: center; }
+    .cp-box { width: 36px; height: 36px; border-radius: 6px; border: 0.5px solid #ddd; flex-shrink: 0; }
+    .cp-label { font-size: 10px; color: #aaa; text-align: center; }
+    #delta-badge {
+      flex: 1; border-radius: 8px; padding: 6px 10px;
+      font-size: 12px; font-weight: 500;
+      display: flex; flex-direction: column; gap: 2px;
+      border: 0.5px solid transparent;
+    }
+    #delta-badge.d-ok   { background: #EAF3DE; color: #3B6D11; border-color: #C0DD97; }
+    #delta-badge.d-warn { background: #FAEEDA; color: #854F0B; border-color: #FAC775; }
+    #delta-badge.d-bad  { background: #FCEBEB; color: #A32D2D; border-color: #F7C1C1; }
+    #delta-badge.d-idle { background: #f0f0eb; color: #888;    border-color: #ddd; }
+    #delta-title { font-weight: 600; font-size: 12px; }
+    #delta-hint  { font-size: 11px; opacity: 0.85; }
+
+    /* Valores guardados */
+    #saved-vals {
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .saved-row {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #f7f8f5; border: 0.5px solid #eee;
+      border-radius: 8px; padding: 7px 10px;
+      font-size: 12px;
+    }
+    .saved-row-left { display: flex; flex-direction: column; gap: 1px; }
+    .saved-name { font-weight: 600; color: #1a1a1a; font-size: 12px; }
+    .saved-params { font-size: 11px; color: #888; font-family: monospace; }
+    .saved-row-right { display: flex; gap: 5px; }
+    .btn-apply-saved {
+      font-size: 11px; padding: 3px 10px; border-radius: 6px;
+      background: #1a1a1a; color: #fff; border: none; cursor: pointer;
+    }
+    .btn-del-saved {
+      font-size: 11px; padding: 3px 8px; border-radius: 6px;
+      background: #f0f0eb; color: #888; border: 0.5px solid #ddd; cursor: pointer;
+    }
+    #no-saved { font-size: 12px; color: #bbb; text-align: center; padding: 4px 0; }
+
+    /* Botón guardar ajustes actuales */
+    #save-ref-btn {
+      width: 100%; padding: 8px; font-size: 13px; font-weight: 500;
+      background: #1b6e45; color: #fff;
+      border: none; border-radius: 8px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    #save-ref-btn:active { opacity: 0.85; }
+    #save-ref-btn:disabled { background: #ccc; cursor: default; }
 
     /* ── Controles de imagen ── */
     #img-controls {
@@ -112,10 +229,9 @@
 
     .ctrl-row { display: flex; align-items: center; gap: 10px; }
     .ctrl-row label { font-size: 12px; color: #666; width: 90px; flex-shrink: 0; }
-    .ctrl-row input[type=range] { flex: 1; accent-color: #4338ca; height: 4px; }
-    .ctrl-row .val { font-size: 12px; color: #333; font-weight: 600; width: 40px; text-align: right; flex-shrink: 0; }
+    .ctrl-row input[type=range] { flex: 1; accent-color: #1b6e45; height: 4px; }
+    .ctrl-row .val { font-size: 12px; color: #333; font-weight: 600; width: 40px; text-align: right; flex-shrink: 0; font-family: monospace; }
 
-    /* ── Separador de sección dentro del panel ── */
     .ctrl-section-label {
       font-size: 10px; font-weight: 600; color: #aaa;
       text-transform: uppercase; letter-spacing: 0.07em;
@@ -148,6 +264,12 @@
     }
     #softfocus-badge.show { display: flex; }
     #softfocus-badge i { font-size: 14px; }
+
+    /* Presets */
+    .ctrl-section-label { font-size: 10px; font-weight: 600; color: #aaa; text-transform: uppercase; letter-spacing: 0.07em; border-top: 0.5px solid #eee; padding-top: 8px; margin-top: 2px; }
+    .preset-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .preset-btn { flex: 1; min-width: 80px; font-size: 11px; font-weight: 600; padding: 6px 8px; border-radius: 8px; border: 0.5px solid #ddd; background: #f8f8f5; color: #555; cursor: pointer; text-align: center; }
+    .preset-btn.active { background: #1b6e45; color: #fff; border-color: #1b6e45; }
 
     /* ── Histograma ── */
     #histogram-wrap { display: flex; flex-direction: column; gap: 4px; }
@@ -211,24 +333,13 @@
     .config-row input, .config-row select { font-size: 13px; padding: 8px 10px; border: 0.5px solid #ccc; border-radius: 8px; width: 100%; background: #fafafa; color: #1a1a1a; }
     .note { font-size: 12px; color: #aaa; padding: 0.5rem 0; border-top: 0.5px solid #eee; line-height: 1.5; }
     #queue-info { font-size: 11px; color: #aaa; text-align: center; }
-
-    /* ── Preset buttons ── */
-    .preset-row { display: flex; gap: 6px; flex-wrap: wrap; }
-    .preset-btn {
-      flex: 1; min-width: 80px;
-      font-size: 11px; font-weight: 600;
-      padding: 6px 8px; border-radius: 8px;
-      border: 0.5px solid #ddd; background: #f8f8f5;
-      color: #555; cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
-      text-align: center;
-    }
-    .preset-btn:hover  { background: #eee; }
-    .preset-btn.active { background: #4338ca; color: #fff; border-color: #4338ca; }
   </style>
 </head>
 <body>
 <div id="app">
+
+  <!-- PANEL FIJO: header + visor + botones de disparo -->
+  <div id="top-panel">
 
   <div id="header">
     <h1><i class="ti ti-wheat" style="font-size:18px;margin-right:6px;vertical-align:-2px;"></i>Grain Cam</h1>
@@ -251,13 +362,105 @@
       </div>
       <div id="exposure-label">—</div>
     </div>
+    <!-- RGB en vivo en el visor -->
+    <div id="rgb-live">
+      <div class="rgb-dot" id="rgb-swatch" style="background:#ccc;"></div>
+      <span class="rgb-val" id="rgb-r-live">R —</span>
+      <span class="rgb-sep">/</span>
+      <span class="rgb-val" id="rgb-g-live">G —</span>
+      <span class="rgb-sep">/</span>
+      <span class="rgb-val" id="rgb-b-live">B —</span>
+    </div>
     <div id="exposure-alert"></div>
     <div id="flash"></div>
+    <div id="cam-label">Semilla Nueva · Grain Analyzer</div>
     <div id="no-cam">
       <i class="ti ti-camera-off"></i>
       <span>Presiona el botón para activar la cámara</span>
     </div>
-    <div id="cam-label">Semilla Nueva · Grain Analyzer</div>
+  </div>
+
+  <!-- Proyecto activo — dentro del top-panel, encima del disparador -->
+  <div id="session-card" style="background:#fff;border:0.5px solid #ddd;border-radius:14px;padding:0.6rem 1rem;">
+    <div id="session-label" style="font-size:11px;color:#999;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;">Proyecto activo</div>
+    <div id="session-name" style="font-size:14px;color:#1a1a1a;font-weight:500;display:flex;align-items:center;gap:6px;">
+      <i class="ti ti-folder" style="font-size:15px;color:#888;"></i>
+      <span id="session-text">Proyecto_001</span>
+      <button id="edit-btn" onclick="toggleEdit()" style="margin-left:auto;background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:6px;color:#888;font-size:13px;">
+        <i class="ti ti-pencil"></i> Cambiar
+      </button>
+    </div>
+    <div id="edit-row" style="display:none;margin-top:8px;gap:6px;align-items:center;">
+      <input type="text" id="new-project-input" placeholder="Ej: Finca_San_Juan" style="flex:1;font-size:13px;padding:7px 10px;border:0.5px solid #ccc;border-radius:8px;background:#fafafa;color:#1a1a1a;width:100%;">
+      <button onclick="applyProject()" style="padding:7px 14px;font-size:13px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;cursor:pointer;white-space:nowrap;">Aplicar</button>
+    </div>
+  </div>
+
+  <!-- ══ PANEL DE VALORES DE REFERENCIA ══ -->
+  <div id="ref-panel">
+    <div id="ref-panel-header">
+      <span>🎯 Valores de referencia</span>
+    </div>
+
+    <!-- Barras RGB actuales vs objetivo -->
+    <div id="rgb-target-row">
+      <div class="rgb-target-label">RGB actual vs objetivo (Brillo II · iPhone 12)</div>
+      <div class="rgb-channels">
+        <div class="rgb-ch">
+          <span class="rgb-ch-label" style="color:#e24b4a;">R</span>
+          <div class="rgb-ch-bar-wrap">
+            <div class="rgb-ch-bar" id="bar-r" style="width:0%;background:#e24b4a;"></div>
+          </div>
+          <span class="rgb-ch-val" id="live-r">—</span>
+          <span class="rgb-ch-target">obj: 225–232</span>
+        </div>
+        <div class="rgb-ch">
+          <span class="rgb-ch-label" style="color:#639922;">G</span>
+          <div class="rgb-ch-bar-wrap">
+            <div class="rgb-ch-bar" id="bar-g" style="width:0%;background:#639922;"></div>
+          </div>
+          <span class="rgb-ch-val" id="live-g">—</span>
+          <span class="rgb-ch-target">obj: 215–222</span>
+        </div>
+        <div class="rgb-ch">
+          <span class="rgb-ch-label" style="color:#378add;">B</span>
+          <div class="rgb-ch-bar-wrap">
+            <div class="rgb-ch-bar" id="bar-b" style="width:0%;background:#378add;"></div>
+          </div>
+          <span class="rgb-ch-val" id="live-b">—</span>
+          <span class="rgb-ch-target">obj: 149–160</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Color actual vs objetivo -->
+    <div id="delta-row">
+      <div id="color-preview-wrap">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+          <div class="cp-box" id="cp-actual" style="background:#ccc;"></div>
+          <span class="cp-label">Actual</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+          <div class="cp-box" style="background:rgb(229,220,160);"></div>
+          <span class="cp-label">Objetivo</span>
+        </div>
+      </div>
+      <div id="delta-badge" class="d-idle">
+        <div id="delta-title">Esperando cámara...</div>
+        <div id="delta-hint">Activa la cámara para comparar</div>
+      </div>
+    </div>
+
+    <!-- Ajustes guardados -->
+    <div class="rgb-target-label" style="margin-top:4px;">Ajustes guardados</div>
+    <div id="saved-vals">
+      <div id="no-saved">Sin ajustes guardados aún</div>
+    </div>
+
+    <button id="save-ref-btn" onclick="saveCurrentRef()">
+      <i class="ti ti-bookmark-plus"></i>
+      Guardar ajustes actuales como referencia
+    </button>
   </div>
 
   <!-- Controles de imagen -->
@@ -267,7 +470,6 @@
       <button id="reset-img-btn" onclick="resetImgControls()">Restablecer</button>
     </div>
 
-    <!-- Indicador de calidad -->
     <div id="quality-indicator" class="q-idle">
       <i class="ti ti-eye-off" id="quality-icon"></i>
       <div id="quality-details">
@@ -276,16 +478,14 @@
       </div>
     </div>
 
-    <!-- ── NUEVO: Presets de cámara ── -->
     <div class="ctrl-section-label">Presets por cámara</div>
     <div class="preset-row">
-      <button class="preset-btn" id="preset-none"    onclick="applyPreset('none')">Sin ajuste</button>
-      <button class="preset-btn" id="preset-iphone"  onclick="applyPreset('iphone')">📱 iPhone</button>
-      <button class="preset-btn" id="preset-a26"     onclick="applyPreset('a26')">📱 A26</button>
-      <button class="preset-btn" id="preset-redmi"   onclick="applyPreset('redmi')">📱 Redmi</button>
+      <button class="preset-btn" id="preset-none"   onclick="applyPreset('none')">Sin ajuste</button>
+      <button class="preset-btn" id="preset-iphone" onclick="applyPreset('iphone')">📱 iPhone</button>
+      <button class="preset-btn" id="preset-a26"    onclick="applyPreset('a26')">📱 A26</button>
+      <button class="preset-btn" id="preset-redmi"  onclick="applyPreset('redmi')">📱 Redmi</button>
     </div>
 
-    <!-- Exposición y brillo -->
     <div class="ctrl-section-label">Exposición y brillo</div>
     <div class="ctrl-row">
       <label>💡 Brillo</label>
@@ -303,7 +503,6 @@
       <span class="val" id="val-exposure">0.00</span>
     </div>
 
-    <!-- ── NUEVO: Temperatura de color ── -->
     <div class="ctrl-section-label">Color</div>
     <div class="ctrl-row">
       <label>🌡 Temperatura</label>
@@ -316,8 +515,7 @@
       <span class="val" id="val-saturation">0</span>
     </div>
 
-    <!-- ── NUEVO: Soft-focus / suavizado de bordes ── -->
-    <div class="ctrl-section-label">Morphología</div>
+    <div class="ctrl-section-label">Morfología</div>
     <div class="ctrl-row">
       <label>🔵 Suavizado</label>
       <input type="range" id="ctrl-blur" min="0" max="4" value="0" step="1" oninput="updateFilter()">
@@ -328,26 +526,9 @@
       <span>Suavizado activo — mejora circularidad en iPhone</span>
     </div>
 
-    <!-- Histograma -->
     <div id="histogram-wrap">
       <span id="histogram-label">Histograma</span>
       <canvas id="histogram" width="380" height="40"></canvas>
-    </div>
-  </div>
-
-  <!-- Proyecto activo -->
-  <div id="session-card">
-    <div id="session-label">Proyecto activo</div>
-    <div id="session-name">
-      <i class="ti ti-folder"></i>
-      <span id="session-text">Proyecto_001</span>
-      <button id="edit-btn" onclick="toggleEdit()" style="margin-left:auto;background:none;border:none;cursor:pointer;padding:2px 6px;border-radius:6px;color:#888;font-size:13px;">
-        <i class="ti ti-pencil"></i> Cambiar
-      </button>
-    </div>
-    <div id="edit-row" style="display:none;">
-      <input type="text" id="new-project-input" placeholder="Ej: Finca_San_Juan">
-      <button onclick="applyProject()" style="padding:7px 14px;font-size:13px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;cursor:pointer;white-space:nowrap;">Aplicar</button>
     </div>
   </div>
 
@@ -365,6 +546,11 @@
       <input type="file" id="file-input" accept="image/*" style="display:none">
     </button>
   </div>
+
+  </div><!-- /top-panel -->
+
+  <!-- PANEL SCROLLEABLE: thumbnails + ajustes + config -->
+  <div id="scroll-panel">
 
   <div id="thumb-row">
     <div id="empty-thumbs">Las fotos tomadas aparecerán aquí</div>
@@ -398,105 +584,62 @@
     <p class="note">Las fotos se guardan en Google Drive → GrainAnalyzer_Fotos → [nombre de proyecto]</p>
   </div>
 
-</div>
+  </div><!-- /scroll-panel -->
+
+</div><!-- /app -->
 
 <script>
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyD5pScmWj5G_2cgxjOjj0YtkLWNWvdG2QJgkP9hlIDS3KFx21tnREJ3Efu4_LMo6u1/exec";
 
-  // ── Estado ──────────────────────────────────────────────────────────────────
-  let photoCount  = 0;
-  let stream      = null;
-  let camActive   = false;
-  let uploadQueue = [];
-  let isUploading = false;
-  let animFrameId = null;
-  let exposureState = 'idle';
-  let _histTimer    = 0;
-  let _alertTimer   = null;
-  let _lastAlertShown = 0;
-  let activePreset  = 'none';
+  // Rangos objetivo (Brillo II, iPhone 12, 30 cm)
+  const TARGET = { rMin:225, rMax:232, gMin:215, gMax:222, bMin:149, bMax:160 };
 
-  // ── Parámetros de imagen (AMPLIADOS) ────────────────────────────────────────
-  // temp: temperatura de color  (-80 frío / +80 cálido)
-  // blur: suavizado de bordes    (0 = off, 1–4 = radio en px)
-  let imgParams = { brightness: 0, contrast: 0, exposure: 0, saturation: 0, temp: 0, blur: 0 };
+  let photoCount = 0, stream = null, camActive = false;
+  let uploadQueue = [], isUploading = false;
+  let animFrameId = null, exposureState = 'idle';
+  let _histTimer = 0, _alertTimer = null, _lastAlertShown = 0;
+  let activePreset = 'none';
+  let savedRefs = JSON.parse(localStorage.getItem('grainCamRefs') || '[]');
 
-  // ── Presets por cámara ──────────────────────────────────────────────────────
-  // iPhone: leve suavizado (blur 1) para mejorar circularidad; sin cambio de color
-  // A26:    temperatura -25 (más frío/neutro) para contrarrestar el amarillamiento del LED
-  //         exposición -0.20 para reducir sobreexposición en granos blancos
-  // Redmi:  temperatura -30 + exposición -0.25 (tiende a saturar en blanco igual que A26)
+  let imgParams = { brightness:0, contrast:0, exposure:0, saturation:0, temp:0, blur:0 };
+
   const PRESETS = {
-    none:   { brightness: 0,  contrast: 0, exposure:  0.00, saturation: 0, temp:   0, blur: 0 },
-    iphone: { brightness: 0,  contrast: 0, exposure:  0.00, saturation: 0, temp:   0, blur: 1 },
-    a26:    { brightness: 0,  contrast: 5, exposure: -0.20, saturation: 0, temp: -25, blur: 0 },
-    redmi:  { brightness: -5, contrast: 0, exposure: -0.25, saturation: 0, temp: -30, blur: 0 },
+    none:   { brightness:0,  contrast:0, exposure: 0.00, saturation:0, temp:  0, blur:0 },
+    iphone: { brightness:0,  contrast:0, exposure: 0.00, saturation:0, temp:  0, blur:1 },
+    a26:    { brightness:0,  contrast:5, exposure:-0.20, saturation:0, temp:-25, blur:0 },
+    redmi:  { brightness:-5, contrast:0, exposure:-0.25, saturation:0, temp:-30, blur:0 },
   };
 
-  function applyPreset(name) {
-    activePreset = name;
-    const p = PRESETS[name];
-    imgParams = { ...p };
-
-    document.getElementById('ctrl-brightness').value = p.brightness;
-    document.getElementById('ctrl-contrast').value   = p.contrast;
-    document.getElementById('ctrl-exposure').value   = p.exposure;
-    document.getElementById('ctrl-saturation').value = p.saturation;
-    document.getElementById('ctrl-temp').value       = p.temp;
-    document.getElementById('ctrl-blur').value       = p.blur;
-
-    document.getElementById('val-brightness').textContent = p.brightness;
-    document.getElementById('val-contrast').textContent   = p.contrast;
-    document.getElementById('val-exposure').textContent   = p.exposure.toFixed(2);
-    document.getElementById('val-saturation').textContent = p.saturation;
-    document.getElementById('val-temp').textContent       = p.temp;
-    document.getElementById('val-blur').textContent       = p.blur;
-
-    // Resaltar botón activo
-    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-    const btn = document.getElementById('preset-' + name);
-    if (btn) btn.classList.add('active');
-
-    // Badge suavizado
-    const badge = document.getElementById('softfocus-badge');
-    if (p.blur > 0) badge.classList.add('show');
-    else            badge.classList.remove('show');
-  }
-
-  // ── Elementos ───────────────────────────────────────────────────────────────
-  const video     = document.getElementById('video');
-  const preview   = document.getElementById('preview');
-  const canvas    = document.getElementById('canvas');
-  const shutter   = document.getElementById('shutter');
-  const noCam     = document.getElementById('no-cam');
-  const countEl   = document.getElementById('count');
-  const thumbRow  = document.getElementById('thumb-row');
-  const flash     = document.getElementById('flash');
-  const badge     = document.getElementById('status-badge');
-  const driveBox  = document.getElementById('drive-status');
-  const histogram = document.getElementById('histogram');
-  const histCtx   = histogram.getContext('2d');
-  const prevCtx   = preview.getContext('2d');
-  const tlRed     = document.getElementById('tl-red');
-  const tlYellow  = document.getElementById('tl-yellow');
-  const tlGreen   = document.getElementById('tl-green');
-  const expLabel  = document.getElementById('exposure-label');
-  const expAlert  = document.getElementById('exposure-alert');
+  // ── Elementos
+  const video    = document.getElementById('video');
+  const preview  = document.getElementById('preview');
+  const canvas   = document.getElementById('canvas');
+  const shutter  = document.getElementById('shutter');
+  const noCam    = document.getElementById('no-cam');
+  const countEl  = document.getElementById('count');
+  const thumbRow = document.getElementById('thumb-row');
+  const flash    = document.getElementById('flash');
+  const badge    = document.getElementById('status-badge');
+  const driveBox = document.getElementById('drive-status');
+  const histogram= document.getElementById('histogram');
+  const histCtx  = histogram.getContext('2d');
+  const prevCtx  = preview.getContext('2d');
+  const tlRed    = document.getElementById('tl-red');
+  const tlYellow = document.getElementById('tl-yellow');
+  const tlGreen  = document.getElementById('tl-green');
+  const expLabel = document.getElementById('exposure-label');
+  const expAlert = document.getElementById('exposure-alert');
   const qualityEl    = document.getElementById('quality-indicator');
   const qualityIcon  = document.getElementById('quality-icon');
   const qualityTitle = document.getElementById('quality-title');
   const qualityHint  = document.getElementById('quality-hint');
 
-  // ── Cámara ──────────────────────────────────────────────────────────────────
+  // ── Cámara
   async function startCamera() {
     try {
       const res = document.getElementById('cfg-res').value;
       stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'environment',
-          width:  { ideal: res === 'high' ? 3840 : 1920 },
-          height: { ideal: res === 'high' ? 2160 : 1080 }
-        }
+        video: { facingMode:'environment', width:{ideal: res==='high'?3840:1920}, height:{ideal: res==='high'?2160:1080} }
       });
       video.srcObject = stream;
       await new Promise(r => video.onloadedmetadata = r);
@@ -504,7 +647,7 @@
       noCam.style.display = 'none';
       camActive = true;
       badge.textContent = 'Cámara activa';
-      updateQualityCard('idle', 'Activando cámara...', 'El semáforo aparece en el visor');
+      updateQualityCard('idle','Activando cámara...','El semáforo aparece en el visor');
       startPreviewLoop();
     } catch(e) {
       noCam.innerHTML = '<i class="ti ti-camera-off"></i><span>Activa los permisos de cámara</span>';
@@ -512,23 +655,19 @@
     }
   }
 
-  // ── Loop de preview ──────────────────────────────────────────────────────────
+  // ── Preview loop
   function startPreviewLoop() {
     if (animFrameId) cancelAnimationFrame(animFrameId);
     function loop() {
       if (!camActive || video.readyState < 2) { animFrameId = requestAnimationFrame(loop); return; }
-      const vw = video.videoWidth;
-      const vh = video.videoHeight;
+      const vw = video.videoWidth, vh = video.videoHeight;
       if (!vw || !vh) { animFrameId = requestAnimationFrame(loop); return; }
       const container = preview.parentElement;
-      const cw = container.clientWidth;
-      const ch = container.clientHeight;
-      preview.width  = cw;
-      preview.height = ch;
+      const cw = container.clientWidth, ch = container.clientHeight;
+      preview.width = cw; preview.height = ch;
       const scale = Math.max(cw/vw, ch/vh);
       const dw = vw*scale, dh = vh*scale;
-      const dx = (cw-dw)/2, dy = (ch-dh)/2;
-      prevCtx.drawImage(video, dx, dy, dw, dh);
+      prevCtx.drawImage(video, (cw-dw)/2, (ch-dh)/2, dw, dh);
       applyFiltersToCanvas(prevCtx, cw, ch);
       analyzeExposure(prevCtx, cw, ch);
       animFrameId = requestAnimationFrame(loop);
@@ -536,160 +675,256 @@
     loop();
   }
 
-  // ── Aplicar filtros (AMPLIADO con temperatura y blur) ────────────────────────
-  // Temperatura de color:
-  //   valor positivo = más cálido (sube R, baja B)  → corrige imágenes frías/azuladas
-  //   valor negativo = más frío   (baja R, sube B)  → corrige sobreexposición cálida del A26/Redmi
+  // ── Filtros
   function applyFiltersToCanvas(ctx, w, h) {
     const { brightness, contrast, exposure, saturation, temp, blur } = imgParams;
-    const noChange = brightness===0 && contrast===0 && exposure===0 && saturation===0 && temp===0 && blur===0;
-    if (noChange) return;
-
-    // Blur (suavizado de bordes) ANTES de leer los píxeles
-    // Usamos filter CSS del canvas solo para el preview; en la captura real lo hacemos por software
-    if (blur > 0) {
-      ctx.filter = `blur(${blur}px)`;
-      ctx.drawImage(preview, 0, 0);
-      ctx.filter = 'none';
-    }
-
+    if (brightness===0 && contrast===0 && exposure===0 && saturation===0 && temp===0 && blur===0) return;
+    if (blur > 0) { ctx.filter = `blur(${blur}px)`; ctx.drawImage(preview, 0, 0); ctx.filter = 'none'; }
     const imageData = ctx.getImageData(0, 0, w, h);
     const data = imageData.data;
-    const bAdd    = brightness * 2.55;
-    const cFactor = (259*(contrast+255)) / (255*(259-contrast));
-    const expMul  = Math.pow(2, exposure);
-    const satF    = (saturation+100) / 100;
-    // Temperatura: rango -80..+80 → offset de canal de ±40 px de color
-    const tempR   =  temp * 0.5;   // positivo = más rojo
-    const tempB   = -temp * 0.5;   // positivo = menos azul
-
+    const bAdd = brightness*2.55;
+    const cF   = (259*(contrast+255)) / (255*(259-contrast));
+    const expM = Math.pow(2, exposure);
+    const satF = (saturation+100)/100;
+    const tR   =  temp*0.5, tB = -temp*0.5;
     for (let i = 0; i < data.length; i += 4) {
-      let r = data[i], g = data[i+1], b = data[i+2];
-
-      // Exposición
-      r *= expMul; g *= expMul; b *= expMul;
-      // Brillo
-      r += bAdd; g += bAdd; b += bAdd;
-      // Contraste
-      r = cFactor*(r-128)+128;
-      g = cFactor*(g-128)+128;
-      b = cFactor*(b-128)+128;
-      // Temperatura de color
-      r += tempR;
-      b += tempB;
-      // Saturación
-      if (saturation !== 0) {
-        const luma = 0.299*r + 0.587*g + 0.114*b;
-        r = luma + satF*(r-luma);
-        g = luma + satF*(g-luma);
-        b = luma + satF*(b-luma);
-      }
-
-      data[i]   = Math.max(0, Math.min(255, r));
-      data[i+1] = Math.max(0, Math.min(255, g));
-      data[i+2] = Math.max(0, Math.min(255, b));
+      let r=data[i], g=data[i+1], b=data[i+2];
+      r*=expM; g*=expM; b*=expM;
+      r+=bAdd; g+=bAdd; b+=bAdd;
+      r=cF*(r-128)+128; g=cF*(g-128)+128; b=cF*(b-128)+128;
+      r+=tR; b+=tB;
+      if (saturation!==0) { const l=0.299*r+0.587*g+0.114*b; r=l+satF*(r-l); g=l+satF*(g-l); b=l+satF*(b-l); }
+      data[i]=Math.max(0,Math.min(255,r)); data[i+1]=Math.max(0,Math.min(255,g)); data[i+2]=Math.max(0,Math.min(255,b));
     }
     ctx.putImageData(imageData, 0, 0);
   }
 
-  // ── Análisis de exposición + semáforo ────────────────────────────────────────
+  // ── Análisis de exposición + RGB center sample
   function analyzeExposure(ctx, w, h) {
     _histTimer++;
     if (_histTimer % 12 !== 0) return;
     const sample = ctx.getImageData(0, 0, w, h);
     const d = sample.data;
     const bins = new Uint32Array(256);
-    let lumaSum = 0, totalPx = 0;
+    let lumaSum=0, totalPx=0;
     for (let i = 0; i < d.length; i += 32) {
       const luma = (d[i]*77 + d[i+1]*150 + d[i+2]*29) >> 8;
-      bins[luma]++; lumaSum += luma; totalPx++;
+      bins[luma]++; lumaSum+=luma; totalPx++;
     }
-    const avgLuma = lumaSum / totalPx;
-    const darkPx  = bins.slice(0,30).reduce((a,b)=>a+b,0);
-    const overPx  = bins.slice(240).reduce((a,b)=>a+b,0);
-    const darkPct = darkPx / totalPx;
-    const overPct = overPx / totalPx;
+    const avgLuma = lumaSum/totalPx;
+    const darkPct = bins.slice(0,30).reduce((a,b)=>a+b,0)/totalPx;
+    const overPct = bins.slice(240).reduce((a,b)=>a+b,0)/totalPx;
+
+    // Sample center zone RGB (central 30% of image)
+    const cx1=Math.floor(w*0.35), cx2=Math.floor(w*0.65);
+    const cy1=Math.floor(h*0.40), cy2=Math.floor(h*0.60);
+    let rSum=0, gSum=0, bSum=0, cnt=0;
+    // Sample center pixels sparsely
+    for (let y=cy1; y<cy2; y+=4) {
+      for (let x=cx1; x<cx2; x+=4) {
+        const idx=(y*w+x)*4;
+        // Only include pixels that look like grains (bright, not background)
+        const luma=(d[idx]*77+d[idx+1]*150+d[idx+2]*29)>>8;
+        if (luma > 60) { rSum+=d[idx]; gSum+=d[idx+1]; bSum+=d[idx+2]; cnt++; }
+      }
+    }
+    if (cnt > 0) {
+      const rAvg=Math.round(rSum/cnt), gAvg=Math.round(gSum/cnt), bAvg=Math.round(bSum/cnt);
+      updateRGBLive(rAvg, gAvg, bAvg);
+    }
+
     let newState;
-    if      (avgLuma < 45 || darkPct > 0.60) newState = 'bad-dark';
-    else if (overPct > 0.25)                  newState = 'bad-over';
-    else if (avgLuma < 80 || darkPct > 0.30) newState = 'warn-dark';
-    else if (overPct > 0.10)                  newState = 'warn-over';
-    else                                       newState = 'good';
+    if      (avgLuma<45 || darkPct>0.60) newState='bad-dark';
+    else if (overPct>0.25)                newState='bad-over';
+    else if (avgLuma<80 || darkPct>0.30) newState='warn-dark';
+    else if (overPct>0.10)               newState='warn-over';
+    else                                  newState='good';
     updateTrafficLight(newState);
     drawHistogramData(bins, totalPx, overPct);
     exposureState = newState;
   }
 
+  // ── RGB live update + comparación con objetivo
+  function updateRGBLive(r, g, b) {
+    document.getElementById('rgb-r-live').textContent = 'R '+r;
+    document.getElementById('rgb-g-live').textContent = 'G '+g;
+    document.getElementById('rgb-b-live').textContent = 'B '+b;
+    document.getElementById('rgb-swatch').style.background = `rgb(${r},${g},${b})`;
+
+    // Barras de referencia
+    document.getElementById('bar-r').style.width = (r/255*100).toFixed(1)+'%';
+    document.getElementById('bar-g').style.width = (g/255*100).toFixed(1)+'%';
+    document.getElementById('bar-b').style.width = (b/255*100).toFixed(1)+'%';
+    document.getElementById('live-r').textContent = r;
+    document.getElementById('live-g').textContent = g;
+    document.getElementById('live-b').textContent = b;
+    document.getElementById('cp-actual').style.background = `rgb(${r},${g},${b})`;
+
+    // Delta vs objetivo
+    const rOk = r>=TARGET.rMin && r<=TARGET.rMax;
+    const gOk = g>=TARGET.gMin && g<=TARGET.gMax;
+    const bOk = b>=TARGET.bMin && b<=TARGET.bMax;
+    const allOk = rOk && gOk && bOk;
+    const someOk = rOk || gOk || bOk;
+    const db = document.getElementById('delta-badge');
+    const rDiff = r < TARGET.rMin ? TARGET.rMin-r : r > TARGET.rMax ? r-TARGET.rMax : 0;
+    const gDiff = g < TARGET.gMin ? TARGET.gMin-g : g > TARGET.gMax ? g-TARGET.gMax : 0;
+    const bDiff = b < TARGET.bMin ? TARGET.bMin-b : b > TARGET.bMax ? b-TARGET.bMax : 0;
+
+    if (allOk) {
+      db.className = 'delta-badge d-ok';
+      document.getElementById('delta-title').textContent = '✓ Colores dentro del rango';
+      document.getElementById('delta-hint').textContent = 'Listo para fotografiar';
+    } else {
+      // Dar sugerencias específicas
+      let hints = [];
+      if (r < TARGET.rMin) hints.push(`sube temperatura +${rDiff}`);
+      else if (r > TARGET.rMax) hints.push(`baja temperatura −${rDiff}`);
+      if (b < TARGET.bMin) hints.push(`imagen muy cálida`);
+      else if (b > TARGET.bMax) hints.push(`imagen muy fría`);
+      if (r < 150 && g < 150 && b < 150) hints.push('sube exposición');
+      else if (r > 245 || g > 245) hints.push('baja exposición');
+
+      if (someOk) {
+        db.className = 'delta-badge d-warn';
+        document.getElementById('delta-title').textContent = '~ Casi en rango';
+      } else {
+        db.className = 'delta-badge d-bad';
+        document.getElementById('delta-title').textContent = '✗ Fuera del rango objetivo';
+      }
+      document.getElementById('delta-hint').textContent = hints.length ? hints.join(' · ') : 'Ajusta temperatura y exposición';
+    }
+  }
+
+  // ── Guardar referencia
+  function saveCurrentRef() {
+    const name = document.getElementById('cfg-session').value || 'Sesión';
+    const ref = {
+      id: Date.now(),
+      name: name,
+      brightness: imgParams.brightness,
+      exposure: imgParams.exposure,
+      temp: imgParams.temp,
+      contrast: imgParams.contrast,
+      saturation: imgParams.saturation,
+      blur: imgParams.blur,
+      preset: activePreset,
+      ts: new Date().toLocaleString('es-GT', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
+    };
+    savedRefs.unshift(ref);
+    if (savedRefs.length > 10) savedRefs = savedRefs.slice(0,10);
+    localStorage.setItem('grainCamRefs', JSON.stringify(savedRefs));
+    renderSavedRefs();
+  }
+
+  function applySavedRef(id) {
+    const ref = savedRefs.find(r => r.id === id);
+    if (!ref) return;
+    imgParams = { brightness:ref.brightness, contrast:ref.contrast, exposure:ref.exposure, saturation:ref.saturation, temp:ref.temp, blur:ref.blur };
+    document.getElementById('ctrl-brightness').value = ref.brightness;
+    document.getElementById('ctrl-contrast').value   = ref.contrast;
+    document.getElementById('ctrl-exposure').value   = ref.exposure;
+    document.getElementById('ctrl-saturation').value = ref.saturation;
+    document.getElementById('ctrl-temp').value       = ref.temp;
+    document.getElementById('ctrl-blur').value       = ref.blur;
+    document.getElementById('val-brightness').textContent = ref.brightness;
+    document.getElementById('val-contrast').textContent   = ref.contrast;
+    document.getElementById('val-exposure').textContent   = ref.exposure.toFixed(2);
+    document.getElementById('val-saturation').textContent = ref.saturation;
+    document.getElementById('val-temp').textContent       = ref.temp;
+    document.getElementById('val-blur').textContent       = ref.blur;
+    document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+    activePreset = ref.preset || 'none';
+    const pb = document.getElementById('preset-'+activePreset);
+    if (pb) pb.classList.add('active');
+    const sfb = document.getElementById('softfocus-badge');
+    if (ref.blur > 0) sfb.classList.add('show'); else sfb.classList.remove('show');
+  }
+
+  function deleteSavedRef(id) {
+    savedRefs = savedRefs.filter(r => r.id !== id);
+    localStorage.setItem('grainCamRefs', JSON.stringify(savedRefs));
+    renderSavedRefs();
+  }
+
+  function renderSavedRefs() {
+    const container = document.getElementById('saved-vals');
+    if (savedRefs.length === 0) {
+      container.innerHTML = '<div id="no-saved">Sin ajustes guardados aún</div>';
+      return;
+    }
+    container.innerHTML = savedRefs.map(r => `
+      <div class="saved-row">
+        <div class="saved-row-left">
+          <span class="saved-name">${r.name} <span style="font-size:10px;color:#aaa;font-weight:400;">${r.ts}</span></span>
+          <span class="saved-params">Exp ${r.exposure>=0?'+':''}${r.exposure.toFixed(2)} · Temp ${r.temp>=0?'+':''}${r.temp} · Brillo ${r.brightness>=0?'+':''}${r.brightness}</span>
+        </div>
+        <div class="saved-row-right">
+          <button class="btn-apply-saved" onclick="applySavedRef(${r.id})">Aplicar</button>
+          <button class="btn-del-saved"   onclick="deleteSavedRef(${r.id})">✕</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── Semáforo
   function updateTrafficLight(state) {
-    tlRed.className    = 'tl-dot red    inactive';
+    tlRed.className = 'tl-dot red inactive';
     tlYellow.className = 'tl-dot yellow inactive';
     tlGreen.className  = 'tl-dot green  inactive';
     expAlert.className = ''; expAlert.textContent = '';
-    if (state === 'bad-dark') {
-      tlRed.className = 'tl-dot red active'; expLabel.textContent = 'OSCURO';
-      shutter.className = 'shutter-bad';
-      showAlert('alert-dark', '⚠️  Imagen muy oscura — sube la exposición o el brillo');
-      updateQualityCard('bad', 'Imagen muy oscura', 'Sube la exposición o el brillo del slider');
-    } else if (state === 'bad-over') {
-      tlRed.className = 'tl-dot red active'; expLabel.textContent = 'SOBRE';
-      shutter.className = 'shutter-bad';
-      showAlert('alert-over', '⚠️  Sobreexpuesta — baja la exposición o aleja la luz');
-      updateQualityCard('bad', 'Sobreexpuesta', 'Baja la exposición o usa el preset de tu cámara');
-    } else if (state === 'warn-dark') {
-      tlYellow.className = 'tl-dot yellow active'; expLabel.textContent = 'DIM';
-      shutter.className = 'shutter-warn';
-      updateQualityCard('warn', 'Un poco oscura', 'Prueba subir brillo o exposición levemente');
-    } else if (state === 'warn-over') {
-      tlYellow.className = 'tl-dot yellow active'; expLabel.textContent = 'BRILLANTE';
-      shutter.className = 'shutter-warn';
-      updateQualityCard('warn', 'Un poco brillante', 'Prueba el preset de tu cámara o baja exposición');
-    } else if (state === 'good') {
-      tlGreen.className = 'tl-dot green active'; expLabel.textContent = 'OK';
-      shutter.className = 'shutter-good';
-      updateQualityCard('good', 'Exposición correcta', 'Listo para capturar');
+    if (state==='bad-dark') {
+      tlRed.className='tl-dot red active'; expLabel.textContent='OSCURO'; shutter.className='shutter-bad';
+      showAlert('alert-dark','⚠️ Imagen muy oscura — sube la exposición o el brillo');
+      updateQualityCard('bad','Imagen muy oscura','Sube exposición o brillo');
+    } else if (state==='bad-over') {
+      tlRed.className='tl-dot red active'; expLabel.textContent='SOBRE'; shutter.className='shutter-bad';
+      showAlert('alert-over','⚠️ Sobreexpuesta — baja la exposición');
+      updateQualityCard('bad','Sobreexpuesta','Baja exposición o usa el preset de tu cámara');
+    } else if (state==='warn-dark') {
+      tlYellow.className='tl-dot yellow active'; expLabel.textContent='DIM'; shutter.className='shutter-warn';
+      updateQualityCard('warn','Un poco oscura','Prueba subir brillo o exposición levemente');
+    } else if (state==='warn-over') {
+      tlYellow.className='tl-dot yellow active'; expLabel.textContent='BRILLANTE'; shutter.className='shutter-warn';
+      updateQualityCard('warn','Un poco brillante','Prueba el preset de tu cámara o baja exposición');
+    } else if (state==='good') {
+      tlGreen.className='tl-dot green active'; expLabel.textContent='OK'; shutter.className='shutter-good';
+      updateQualityCard('good','Exposición correcta','Listo para capturar');
     }
   }
 
   function showAlert(cssClass, msg) {
     const now = Date.now();
-    if (now - _lastAlertShown < 5000) return;
+    if (now-_lastAlertShown < 5000) return;
     _lastAlertShown = now;
-    expAlert.className = cssClass + ' show'; expAlert.textContent = msg;
+    expAlert.className = cssClass+' show'; expAlert.textContent = msg;
     if (_alertTimer) clearTimeout(_alertTimer);
-    _alertTimer = setTimeout(() => { expAlert.className = ''; expAlert.textContent = ''; }, 3500);
+    _alertTimer = setTimeout(()=>{ expAlert.className=''; expAlert.textContent=''; }, 3500);
   }
 
   function updateQualityCard(level, title, hint) {
-    const icons = { idle:'ti-eye-off', good:'ti-circle-check', warn:'ti-alert-triangle', bad:'ti-alert-circle' };
-    qualityIcon.className = 'ti ' + (icons[level] || 'ti-eye-off');
-    qualityEl.id = 'quality-indicator';
-    qualityEl.className = { good:'q-good', warn:'q-warn', bad:'q-bad', idle:'q-idle' }[level] || 'q-idle';
-    qualityTitle.textContent = title || '';
-    qualityHint.textContent  = hint  || '';
+    const icons = {idle:'ti-eye-off', good:'ti-circle-check', warn:'ti-alert-triangle', bad:'ti-alert-circle'};
+    qualityIcon.className = 'ti '+(icons[level]||'ti-eye-off');
+    qualityEl.className = {good:'q-good',warn:'q-warn',bad:'q-bad',idle:'q-idle'}[level]||'q-idle';
+    qualityTitle.textContent = title||''; qualityHint.textContent = hint||'';
   }
 
   function drawHistogramData(bins, totalPx, overPct) {
     const max = Math.max(...bins);
     const hw = histogram.width, hh = histogram.height;
     histCtx.clearRect(0,0,hw,hh);
-    histCtx.fillStyle = '#1a1a1a'; histCtx.fillRect(0,0,hw,hh);
+    histCtx.fillStyle='#1a1a1a'; histCtx.fillRect(0,0,hw,hh);
     const barW = hw/256;
-    for (let x = 0; x < 256; x++) {
+    for (let x=0; x<256; x++) {
       const barH = (bins[x]/max)*hh;
       const t = x/255;
       histCtx.fillStyle = `rgba(${Math.round(t*255)},${Math.round(Math.sin(t*Math.PI)*200)},${Math.round((1-t)*255)},0.85)`;
       histCtx.fillRect(x*barW, hh-barH, barW+0.5, barH);
     }
-    if (overPct > 0.10) {
-      histCtx.fillStyle = 'rgba(255,50,50,0.35)';
-      histCtx.fillRect(hw*0.95, 0, hw*0.05, hh);
-      document.getElementById('histogram-label').textContent = 'Histograma ⚠️ Sobreexpuesto';
-    } else {
-      document.getElementById('histogram-label').textContent = 'Histograma';
-    }
+    document.getElementById('histogram-label').textContent = overPct>0.10 ? 'Histograma ⚠️ Sobreexpuesto' : 'Histograma';
   }
 
-  // ── Actualizar sliders ───────────────────────────────────────────────────────
+  // ── Sliders
   function updateFilter() {
     imgParams.brightness = parseInt(document.getElementById('ctrl-brightness').value);
     imgParams.contrast   = parseInt(document.getElementById('ctrl-contrast').value);
@@ -697,220 +932,126 @@
     imgParams.saturation = parseInt(document.getElementById('ctrl-saturation').value);
     imgParams.temp       = parseInt(document.getElementById('ctrl-temp').value);
     imgParams.blur       = parseInt(document.getElementById('ctrl-blur').value);
-
     document.getElementById('val-brightness').textContent = imgParams.brightness;
     document.getElementById('val-contrast').textContent   = imgParams.contrast;
     document.getElementById('val-exposure').textContent   = imgParams.exposure.toFixed(2);
     document.getElementById('val-saturation').textContent = imgParams.saturation;
     document.getElementById('val-temp').textContent       = imgParams.temp;
     document.getElementById('val-blur').textContent       = imgParams.blur;
-
-    // Mostrar/ocultar badge de suavizado
     const sfb = document.getElementById('softfocus-badge');
-    if (imgParams.blur > 0) sfb.classList.add('show');
-    else sfb.classList.remove('show');
-
-    // Si el usuario mueve un slider manualmente, quitar preset activo
-    // (solo si los valores no coinciden exactamente con el preset actual)
+    if (imgParams.blur>0) sfb.classList.add('show'); else sfb.classList.remove('show');
     const p = PRESETS[activePreset];
-    const coincide = p && Object.keys(p).every(k => imgParams[k] === p[k]);
-    if (!coincide) {
-      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-      activePreset = 'none';
-    }
+    const coincide = p && Object.keys(p).every(k=>imgParams[k]===p[k]);
+    if (!coincide) { document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active')); activePreset='none'; }
   }
 
-  function resetImgControls() {
-    applyPreset('none');
+  function applyPreset(name) {
+    activePreset = name;
+    const p = PRESETS[name];
+    imgParams = {...p};
+    document.getElementById('ctrl-brightness').value = p.brightness;
+    document.getElementById('ctrl-contrast').value   = p.contrast;
+    document.getElementById('ctrl-exposure').value   = p.exposure;
+    document.getElementById('ctrl-saturation').value = p.saturation;
+    document.getElementById('ctrl-temp').value       = p.temp;
+    document.getElementById('ctrl-blur').value       = p.blur;
+    document.getElementById('val-brightness').textContent = p.brightness;
+    document.getElementById('val-contrast').textContent   = p.contrast;
+    document.getElementById('val-exposure').textContent   = p.exposure.toFixed(2);
+    document.getElementById('val-saturation').textContent = p.saturation;
+    document.getElementById('val-temp').textContent       = p.temp;
+    document.getElementById('val-blur').textContent       = p.blur;
+    document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+    const btn = document.getElementById('preset-'+name);
+    if (btn) btn.classList.add('active');
+    const sfb = document.getElementById('softfocus-badge');
+    if (p.blur>0) sfb.classList.add('show'); else sfb.classList.remove('show');
   }
 
-  // ── Captura ──────────────────────────────────────────────────────────────────
-  // MEJORA: aplica los filtros (incluyendo blur) al canvas de alta resolución
-  // antes de guardar, NO solo al preview.
-  shutter.addEventListener('click', async () => {
+  function resetImgControls() { applyPreset('none'); }
+
+  // ── Captura
+  shutter.addEventListener('click', async ()=>{
     if (!camActive) { await startCamera(); return; }
     takePhoto();
   });
 
   function applyBlurToCanvas(ctx, w, h, radius) {
-    // Implementación manual de blur de caja (box blur) 3 pasadas = aproxima Gaussiano
-    // Esto funciona sin CSS filter, en el canvas de captura de alta resolución
-    if (radius <= 0) return;
-    const imageData = ctx.getImageData(0, 0, w, h);
-    const src = imageData.data;
-    const tmp = new Uint8ClampedArray(src.length);
-    const r   = Math.round(radius);
-
-    // Pasada horizontal
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        let rSum=0, gSum=0, bSum=0, count=0;
-        for (let dx = -r; dx <= r; dx++) {
-          const nx = Math.max(0, Math.min(w-1, x+dx));
-          const idx = (y*w+nx)*4;
-          rSum+=src[idx]; gSum+=src[idx+1]; bSum+=src[idx+2]; count++;
-        }
-        const oi = (y*w+x)*4;
-        tmp[oi]=rSum/count; tmp[oi+1]=gSum/count; tmp[oi+2]=bSum/count; tmp[oi+3]=src[oi+3];
-      }
-    }
-    // Pasada vertical
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        let rSum=0, gSum=0, bSum=0, count=0;
-        for (let dy = -r; dy <= r; dy++) {
-          const ny = Math.max(0, Math.min(h-1, y+dy));
-          const idx = (ny*w+x)*4;
-          rSum+=tmp[idx]; gSum+=tmp[idx+1]; bSum+=tmp[idx+2]; count++;
-        }
-        const oi = (y*w+x)*4;
-        src[oi]=rSum/count; src[oi+1]=gSum/count; src[oi+2]=bSum/count;
-      }
-    }
-    ctx.putImageData(imageData, 0, 0);
+    if (radius<=0) return;
+    const imageData=ctx.getImageData(0,0,w,h); const src=imageData.data; const tmp=new Uint8ClampedArray(src.length); const r=Math.round(radius);
+    for (let y=0;y<h;y++) for (let x=0;x<w;x++) { let rs=0,gs=0,bs=0,c=0; for (let dx=-r;dx<=r;dx++) { const nx=Math.max(0,Math.min(w-1,x+dx)); const idx=(y*w+nx)*4; rs+=src[idx];gs+=src[idx+1];bs+=src[idx+2];c++; } const oi=(y*w+x)*4; tmp[oi]=rs/c;tmp[oi+1]=gs/c;tmp[oi+2]=bs/c;tmp[oi+3]=src[oi+3]; }
+    for (let y=0;y<h;y++) for (let x=0;x<w;x++) { let rs=0,gs=0,bs=0,c=0; for (let dy=-r;dy<=r;dy++) { const ny=Math.max(0,Math.min(h-1,y+dy)); const idx=(ny*w+x)*4; rs+=tmp[idx];gs+=tmp[idx+1];bs+=tmp[idx+2];c++; } const oi=(y*w+x)*4; src[oi]=rs/c;src[oi+1]=gs/c;src[oi+2]=bs/c; }
+    ctx.putImageData(imageData,0,0);
   }
 
   function takePhoto() {
-    const w = video.videoWidth;
-    const h = video.videoHeight;
-    canvas.width  = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, w, h);
-
-    // Aplicar blur al canvas de alta resolución (si está activo)
-    if (imgParams.blur > 0) {
-      applyBlurToCanvas(ctx, w, h, imgParams.blur);
-    }
-    // Aplicar resto de filtros de color
-    applyFiltersToCanvas(ctx, w, h);
-
-    flash.style.opacity = '0.9';
-    setTimeout(() => { flash.style.opacity = '0'; }, 120);
-
-    photoCount++;
-    countEl.textContent = photoCount;
-    const session  = document.getElementById('cfg-session').value || 'Proyecto_001';
-    const filename = `${session}_${String(photoCount).padStart(3,'0')}.jpg`;
-    const dataUrl  = canvas.toDataURL('image/jpeg', 0.92);
-    addThumb(dataUrl, filename, exposureState);
-    enqueueUpload(dataUrl, filename, session);
+    const w=video.videoWidth, h=video.videoHeight;
+    canvas.width=w; canvas.height=h;
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(video,0,0,w,h);
+    if (imgParams.blur>0) applyBlurToCanvas(ctx,w,h,imgParams.blur);
+    applyFiltersToCanvas(ctx,w,h);
+    flash.style.opacity='0.9'; setTimeout(()=>{flash.style.opacity='0';},120);
+    photoCount++; countEl.textContent=photoCount;
+    const session=document.getElementById('cfg-session').value||'Proyecto_001';
+    const filename=`${session}_${String(photoCount).padStart(3,'0')}.jpg`;
+    const dataUrl=canvas.toDataURL('image/jpeg',0.92);
+    addThumb(dataUrl,filename,exposureState);
+    enqueueUpload(dataUrl,filename,session);
   }
 
-  // ── Miniaturas ───────────────────────────────────────────────────────────────
+  // ── Miniaturas
   function addThumb(dataUrl, filename, qState) {
-    const emptyEl = document.getElementById('empty-thumbs');
-    if (emptyEl) emptyEl.remove();
-    const wrap   = document.createElement('div'); wrap.className = 'thumb-wrap'; wrap.id = 'wrap-' + filename;
-    const img    = document.createElement('img');  img.src = dataUrl; img.className = 'thumb'; img.alt = filename; img.title = filename;
-    const qbadge = document.createElement('div');
-    qbadge.className = 'thumb-quality-badge';
-    if      (qState === 'good')                              { qbadge.className += ' tqb-ok';   qbadge.textContent = 'OK'; }
-    else if (qState === 'warn-dark' || qState === 'warn-over') { qbadge.className += ' tqb-warn'; qbadge.textContent = '~OK'; }
-    else if (qState === 'bad-dark')                          { qbadge.className += ' tqb-bad';  qbadge.textContent = 'OSC'; }
-    else if (qState === 'bad-over')                          { qbadge.className += ' tqb-bad';  qbadge.textContent = 'OVR'; }
-    const dot = document.createElement('div'); dot.className = 'status-dot dot-uploading'; dot.id = 'dot-' + filename;
+    const emptyEl=document.getElementById('empty-thumbs'); if(emptyEl) emptyEl.remove();
+    const wrap=document.createElement('div'); wrap.className='thumb-wrap'; wrap.id='wrap-'+filename;
+    const img=document.createElement('img'); img.src=dataUrl; img.className='thumb'; img.alt=filename;
+    const qbadge=document.createElement('div'); qbadge.className='thumb-quality-badge';
+    if (qState==='good') { qbadge.className+=' tqb-ok'; qbadge.textContent='OK'; }
+    else if (qState==='warn-dark'||qState==='warn-over') { qbadge.className+=' tqb-warn'; qbadge.textContent='~OK'; }
+    else if (qState==='bad-dark') { qbadge.className+=' tqb-bad'; qbadge.textContent='OSC'; }
+    else if (qState==='bad-over') { qbadge.className+=' tqb-bad'; qbadge.textContent='OVR'; }
+    const dot=document.createElement('div'); dot.className='status-dot dot-uploading'; dot.id='dot-'+filename;
     wrap.appendChild(img); wrap.appendChild(qbadge); wrap.appendChild(dot);
-    thumbRow.appendChild(wrap);
-    thumbRow.scrollLeft = thumbRow.scrollWidth;
+    thumbRow.appendChild(wrap); thumbRow.scrollLeft=thumbRow.scrollWidth;
   }
 
-  function setDotStatus(filename, status) {
-    const dot = document.getElementById('dot-' + filename);
-    if (dot) dot.className = 'status-dot ' + (status === 'done' ? 'dot-done' : 'dot-error');
-  }
+  function setDotStatus(filename,status) { const dot=document.getElementById('dot-'+filename); if(dot) dot.className='status-dot '+(status==='done'?'dot-done':'dot-error'); }
 
-  // ── Cola de subida ────────────────────────────────────────────────────────────
-  function enqueueUpload(dataUrl, filename, session) {
-    uploadQueue.push({ dataUrl, filename, session });
-    updateQueueInfo();
-    if (!isUploading) processQueue();
-  }
-
+  // ── Cola de subida
+  function enqueueUpload(dataUrl,filename,session) { uploadQueue.push({dataUrl,filename,session}); updateQueueInfo(); if(!isUploading) processQueue(); }
   async function processQueue() {
-    if (uploadQueue.length === 0) { isUploading = false; updateQueueInfo(); return; }
-    isUploading = true;
-    const item = uploadQueue[0];
-    setDriveStatus('uploading', `<i class="ti ti-cloud-upload"></i> Subiendo ${item.filename}...`);
+    if (uploadQueue.length===0) { isUploading=false; updateQueueInfo(); return; }
+    isUploading=true; const item=uploadQueue[0];
+    setDriveStatus('uploading',`<i class="ti ti-cloud-upload"></i> Subiendo ${item.filename}...`);
     try {
-      const response = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify({ image: item.dataUrl, filename: item.filename, session: item.session })
-      });
-      const result = await response.json();
-      if (result.success) {
-        setDotStatus(item.filename, 'done');
-        setDriveStatus('success', `<i class="ti ti-circle-check"></i> ${item.filename} guardada`);
-      } else throw new Error(result.error || 'Error desconocido');
-    } catch(err) {
-      setDotStatus(item.filename, 'error');
-      setDriveStatus('error', `<i class="ti ti-alert-circle"></i> Error — se reintentará`);
-      uploadQueue.push(item);
-    }
-    uploadQueue.shift();
-    updateQueueInfo();
-    setTimeout(processQueue, 500);
+      const response=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({image:item.dataUrl,filename:item.filename,session:item.session})});
+      const result=await response.json();
+      if (result.success) { setDotStatus(item.filename,'done'); setDriveStatus('success',`<i class="ti ti-circle-check"></i> ${item.filename} guardada`); }
+      else throw new Error(result.error||'Error desconocido');
+    } catch(err) { setDotStatus(item.filename,'error'); setDriveStatus('error',`<i class="ti ti-alert-circle"></i> Error — se reintentará`); uploadQueue.push(item); }
+    uploadQueue.shift(); updateQueueInfo(); setTimeout(processQueue,500);
   }
+  function setDriveStatus(type,html) { driveBox.className=''; if(type) driveBox.classList.add(type); driveBox.innerHTML=html; }
+  function updateQueueInfo() { const qi=document.getElementById('queue-info'); if(uploadQueue.length>1){qi.style.display='block';document.getElementById('queue-text').textContent=`${uploadQueue.length} fotos en cola`;}else qi.style.display='none'; }
 
-  function setDriveStatus(type, html) {
-    driveBox.className = '';
-    if (type) driveBox.classList.add(type);
-    driveBox.innerHTML = html;
-  }
-
-  function updateQueueInfo() {
-    const qi = document.getElementById('queue-info');
-    if (uploadQueue.length > 1) {
-      qi.style.display = 'block';
-      document.getElementById('queue-text').textContent = `${uploadQueue.length} fotos en cola`;
-    } else qi.style.display = 'none';
-  }
-
-  // ── Galería ───────────────────────────────────────────────────────────────────
-  document.getElementById('upload-btn').addEventListener('click', () => {
-    document.getElementById('file-input').click();
-  });
-  document.getElementById('file-input').addEventListener('change', e => {
-    const file = e.target.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      photoCount++; countEl.textContent = photoCount;
-      const session  = document.getElementById('cfg-session').value || 'Proyecto_001';
-      const filename = `${session}_${String(photoCount).padStart(3,'0')}.jpg`;
-      addThumb(ev.target.result, filename, 'idle');
-      enqueueUpload(ev.target.result, filename, session);
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
+  // ── Galería
+  document.getElementById('upload-btn').addEventListener('click',()=>document.getElementById('file-input').click());
+  document.getElementById('file-input').addEventListener('change',e=>{
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=ev=>{ photoCount++; countEl.textContent=photoCount; const session=document.getElementById('cfg-session').value||'Proyecto_001'; const filename=`${session}_${String(photoCount).padStart(3,'0')}.jpg`; addThumb(ev.target.result,filename,'idle'); enqueueUpload(ev.target.result,filename,session); };
+    reader.readAsDataURL(file); e.target.value='';
   });
 
-  // ── Config / Proyecto ─────────────────────────────────────────────────────────
+  // ── Config / Proyecto
   function toggleConfig() { document.getElementById('config-panel').classList.toggle('open'); }
-  function updateSession() {
-    const val = document.getElementById('cfg-session').value || 'Proyecto_001';
-    document.getElementById('session-text').textContent = val;
-  }
-  function toggleEdit() {
-    const row = document.getElementById('edit-row');
-    const input = document.getElementById('new-project-input');
-    const visible = row.style.display === 'flex';
-    row.style.display = visible ? 'none' : 'flex';
-    if (!visible) { input.value = document.getElementById('cfg-session').value; input.focus(); input.select(); }
-  }
-  function applyProject() {
-    const val = document.getElementById('new-project-input').value.trim().replace(/\s+/g,'_') || 'Proyecto_001';
-    document.getElementById('cfg-session').value = val;
-    document.getElementById('session-text').textContent = val;
-    document.getElementById('edit-row').style.display = 'none';
-    photoCount = 0; countEl.textContent = '0';
-    thumbRow.innerHTML = '<div id="empty-thumbs">Las fotos tomadas aparecerán aquí</div>';
-    setDriveStatus('', `<i class="ti ti-cloud"></i> Proyecto: ${val}`);
-  }
-  document.getElementById('new-project-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') applyProject();
-  });
+  function updateSession() { const val=document.getElementById('cfg-session').value||'Proyecto_001'; document.getElementById('session-text').textContent=val; }
+  function toggleEdit() { const row=document.getElementById('edit-row'); const input=document.getElementById('new-project-input'); const visible=row.style.display==='flex'; row.style.display=visible?'none':'flex'; if(!visible){input.value=document.getElementById('cfg-session').value;input.focus();input.select();} }
+  function applyProject() { const val=document.getElementById('new-project-input').value.trim().replace(/\s+/g,'_')||'Proyecto_001'; document.getElementById('cfg-session').value=val; document.getElementById('session-text').textContent=val; document.getElementById('edit-row').style.display='none'; photoCount=0; countEl.textContent='0'; thumbRow.innerHTML='<div id="empty-thumbs">Las fotos tomadas aparecerán aquí</div>'; setDriveStatus('',`<i class="ti ti-cloud"></i> Proyecto: ${val}`); }
+  document.getElementById('new-project-input').addEventListener('keydown',e=>{ if(e.key==='Enter') applyProject(); });
 
-  // ── Inicio ────────────────────────────────────────────────────────────────────
+  // ── Inicio
+  renderSavedRefs();
   startCamera();
 </script>
 </body>
