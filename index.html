@@ -396,142 +396,6 @@
     </div>
   </div>
 
-  <!-- ══ PANEL DE VALORES DE REFERENCIA ══ -->
-  <div id="ref-panel">
-    <div id="ref-panel-header">
-      <span>🎯 Valores de referencia</span>
-    </div>
-
-    <!-- Barras RGB actuales vs objetivo -->
-    <div id="rgb-target-row">
-      <div class="rgb-target-label">RGB actual vs objetivo (Brillo II · iPhone 12)</div>
-      <div class="rgb-channels">
-        <div class="rgb-ch">
-          <span class="rgb-ch-label" style="color:#e24b4a;">R</span>
-          <div class="rgb-ch-bar-wrap">
-            <div class="rgb-ch-bar" id="bar-r" style="width:0%;background:#e24b4a;"></div>
-          </div>
-          <span class="rgb-ch-val" id="live-r">—</span>
-          <span class="rgb-ch-target">obj: 225–232</span>
-        </div>
-        <div class="rgb-ch">
-          <span class="rgb-ch-label" style="color:#639922;">G</span>
-          <div class="rgb-ch-bar-wrap">
-            <div class="rgb-ch-bar" id="bar-g" style="width:0%;background:#639922;"></div>
-          </div>
-          <span class="rgb-ch-val" id="live-g">—</span>
-          <span class="rgb-ch-target">obj: 215–222</span>
-        </div>
-        <div class="rgb-ch">
-          <span class="rgb-ch-label" style="color:#378add;">B</span>
-          <div class="rgb-ch-bar-wrap">
-            <div class="rgb-ch-bar" id="bar-b" style="width:0%;background:#378add;"></div>
-          </div>
-          <span class="rgb-ch-val" id="live-b">—</span>
-          <span class="rgb-ch-target">obj: 149–160</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Color actual vs objetivo -->
-    <div id="delta-row">
-      <div id="color-preview-wrap">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-          <div class="cp-box" id="cp-actual" style="background:#ccc;"></div>
-          <span class="cp-label">Actual</span>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-          <div class="cp-box" style="background:rgb(229,220,160);"></div>
-          <span class="cp-label">Objetivo</span>
-        </div>
-      </div>
-      <div id="delta-badge" class="d-idle">
-        <div id="delta-title">Esperando cámara...</div>
-        <div id="delta-hint">Activa la cámara para comparar</div>
-      </div>
-    </div>
-
-    <!-- Ajustes guardados -->
-    <div class="rgb-target-label" style="margin-top:4px;">Ajustes guardados</div>
-    <div id="saved-vals">
-      <div id="no-saved">Sin ajustes guardados aún</div>
-    </div>
-
-    <button id="save-ref-btn" onclick="saveCurrentRef()">
-      <i class="ti ti-bookmark-plus"></i>
-      Guardar ajustes actuales como referencia
-    </button>
-  </div>
-
-  <!-- Controles de imagen -->
-  <div id="img-controls">
-    <div id="img-controls-header">
-      <span>🎛️ Ajustes de imagen</span>
-      <button id="reset-img-btn" onclick="resetImgControls()">Restablecer</button>
-    </div>
-
-    <div id="quality-indicator" class="q-idle">
-      <i class="ti ti-eye-off" id="quality-icon"></i>
-      <div id="quality-details">
-        <div id="quality-title">Activando cámara...</div>
-        <div id="quality-hint">El semáforo aparece en el visor</div>
-      </div>
-    </div>
-
-    <div class="ctrl-section-label">Presets por cámara</div>
-    <div class="preset-row">
-      <button class="preset-btn" id="preset-none"   onclick="applyPreset('none')">Sin ajuste</button>
-      <button class="preset-btn" id="preset-iphone" onclick="applyPreset('iphone')">📱 iPhone</button>
-      <button class="preset-btn" id="preset-a26"    onclick="applyPreset('a26')">📱 A26</button>
-      <button class="preset-btn" id="preset-redmi"  onclick="applyPreset('redmi')">📱 Redmi</button>
-    </div>
-
-    <div class="ctrl-section-label">Exposición y brillo</div>
-    <div class="ctrl-row">
-      <label>💡 Brillo</label>
-      <input type="range" id="ctrl-brightness" min="-100" max="100" value="0" step="1" oninput="updateFilter()">
-      <span class="val" id="val-brightness">0</span>
-    </div>
-    <div class="ctrl-row">
-      <label>🔆 Contraste</label>
-      <input type="range" id="ctrl-contrast" min="-100" max="100" value="0" step="1" oninput="updateFilter()">
-      <span class="val" id="val-contrast">0</span>
-    </div>
-    <div class="ctrl-row">
-      <label>🌡️ Exposición</label>
-      <input type="range" id="ctrl-exposure" min="-1.5" max="1.5" value="0" step="0.05" oninput="updateFilter()">
-      <span class="val" id="val-exposure">0.00</span>
-    </div>
-
-    <div class="ctrl-section-label">Color</div>
-    <div class="ctrl-row">
-      <label>🌡 Temperatura</label>
-      <input type="range" id="ctrl-temp" min="-80" max="80" value="0" step="1" oninput="updateFilter()">
-      <span class="val" id="val-temp">0</span>
-    </div>
-    <div class="ctrl-row">
-      <label>🎨 Saturación</label>
-      <input type="range" id="ctrl-saturation" min="-100" max="100" value="0" step="1" oninput="updateFilter()">
-      <span class="val" id="val-saturation">0</span>
-    </div>
-
-    <div class="ctrl-section-label">Morfología</div>
-    <div class="ctrl-row">
-      <label>🔵 Suavizado</label>
-      <input type="range" id="ctrl-blur" min="0" max="4" value="0" step="1" oninput="updateFilter()">
-      <span class="val" id="val-blur">0</span>
-    </div>
-    <div id="softfocus-badge">
-      <i class="ti ti-circle-check"></i>
-      <span>Suavizado activo — mejora circularidad en iPhone</span>
-    </div>
-
-    <div id="histogram-wrap">
-      <span id="histogram-label">Histograma</span>
-      <canvas id="histogram" width="380" height="40"></canvas>
-    </div>
-  </div>
-
   <div id="controls">
     <div id="counter-wrap">
       <span id="count">0</span>
@@ -549,8 +413,123 @@
 
   </div><!-- /top-panel -->
 
-  <!-- PANEL SCROLLEABLE: thumbnails + ajustes + config -->
+  <!-- PANEL SCROLLEABLE: ajustes + thumbnails + config -->
   <div id="scroll-panel">
+
+  <!-- ══ PANEL DE VALORES DE REFERENCIA ══ -->
+  <div id="ref-panel">
+    <div id="ref-panel-header">
+      <span>🎯 Valores de referencia</span>
+    </div>
+    <div id="rgb-target-row">
+      <div class="rgb-target-label">RGB actual vs objetivo (Brillo II · iPhone 12)</div>
+      <div class="rgb-channels">
+        <div class="rgb-ch">
+          <span class="rgb-ch-label" style="color:#e24b4a;">R</span>
+          <div class="rgb-ch-bar-wrap"><div class="rgb-ch-bar" id="bar-r" style="width:0%;background:#e24b4a;"></div></div>
+          <span class="rgb-ch-val" id="live-r">—</span>
+          <span class="rgb-ch-target">obj: 225–232</span>
+        </div>
+        <div class="rgb-ch">
+          <span class="rgb-ch-label" style="color:#639922;">G</span>
+          <div class="rgb-ch-bar-wrap"><div class="rgb-ch-bar" id="bar-g" style="width:0%;background:#639922;"></div></div>
+          <span class="rgb-ch-val" id="live-g">—</span>
+          <span class="rgb-ch-target">obj: 215–222</span>
+        </div>
+        <div class="rgb-ch">
+          <span class="rgb-ch-label" style="color:#378add;">B</span>
+          <div class="rgb-ch-bar-wrap"><div class="rgb-ch-bar" id="bar-b" style="width:0%;background:#378add;"></div></div>
+          <span class="rgb-ch-val" id="live-b">—</span>
+          <span class="rgb-ch-target">obj: 149–160</span>
+        </div>
+      </div>
+    </div>
+    <div id="delta-row">
+      <div id="color-preview-wrap">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+          <div class="cp-box" id="cp-actual" style="background:#ccc;"></div>
+          <span class="cp-label">Actual</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+          <div class="cp-box" style="background:rgb(229,220,160);"></div>
+          <span class="cp-label">Objetivo</span>
+        </div>
+      </div>
+      <div id="delta-badge" class="d-idle">
+        <div id="delta-title">Esperando cámara...</div>
+        <div id="delta-hint">Activa la cámara para comparar</div>
+      </div>
+    </div>
+    <div class="rgb-target-label" style="margin-top:4px;">Ajustes guardados</div>
+    <div id="saved-vals"><div id="no-saved">Sin ajustes guardados aún</div></div>
+    <button id="save-ref-btn" onclick="saveCurrentRef()">
+      <i class="ti ti-bookmark-plus"></i>
+      Guardar ajustes actuales como referencia
+    </button>
+  </div>
+
+  <!-- Controles de imagen -->
+  <div id="img-controls">
+    <div id="img-controls-header">
+      <span>🎛️ Ajustes de imagen</span>
+      <button id="reset-img-btn" onclick="resetImgControls()">Restablecer</button>
+    </div>
+    <div id="quality-indicator" class="q-idle">
+      <i class="ti ti-eye-off" id="quality-icon"></i>
+      <div id="quality-details">
+        <div id="quality-title">Activando cámara...</div>
+        <div id="quality-hint">El semáforo aparece en el visor</div>
+      </div>
+    </div>
+    <div class="ctrl-section-label">Presets por cámara</div>
+    <div class="preset-row">
+      <button class="preset-btn" id="preset-none"   onclick="applyPreset('none')">Sin ajuste</button>
+      <button class="preset-btn" id="preset-iphone" onclick="applyPreset('iphone')">📱 iPhone</button>
+      <button class="preset-btn" id="preset-a26"    onclick="applyPreset('a26')">📱 A26</button>
+      <button class="preset-btn" id="preset-redmi"  onclick="applyPreset('redmi')">📱 Redmi</button>
+    </div>
+    <div class="ctrl-section-label">Exposición y brillo</div>
+    <div class="ctrl-row">
+      <label>💡 Brillo</label>
+      <input type="range" id="ctrl-brightness" min="-100" max="100" value="0" step="1" oninput="updateFilter()">
+      <span class="val" id="val-brightness">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>🔆 Contraste</label>
+      <input type="range" id="ctrl-contrast" min="-100" max="100" value="0" step="1" oninput="updateFilter()">
+      <span class="val" id="val-contrast">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>🌡️ Exposición</label>
+      <input type="range" id="ctrl-exposure" min="-1.5" max="1.5" value="0" step="0.05" oninput="updateFilter()">
+      <span class="val" id="val-exposure">0.00</span>
+    </div>
+    <div class="ctrl-section-label">Color</div>
+    <div class="ctrl-row">
+      <label>🌡 Temperatura</label>
+      <input type="range" id="ctrl-temp" min="-80" max="80" value="0" step="1" oninput="updateFilter()">
+      <span class="val" id="val-temp">0</span>
+    </div>
+    <div class="ctrl-row">
+      <label>🎨 Saturación</label>
+      <input type="range" id="ctrl-saturation" min="-100" max="100" value="0" step="1" oninput="updateFilter()">
+      <span class="val" id="val-saturation">0</span>
+    </div>
+    <div class="ctrl-section-label">Morfología</div>
+    <div class="ctrl-row">
+      <label>🔵 Suavizado</label>
+      <input type="range" id="ctrl-blur" min="0" max="4" value="0" step="1" oninput="updateFilter()">
+      <span class="val" id="val-blur">0</span>
+    </div>
+    <div id="softfocus-badge">
+      <i class="ti ti-circle-check"></i>
+      <span>Suavizado activo — mejora circularidad en iPhone</span>
+    </div>
+    <div id="histogram-wrap">
+      <span id="histogram-label">Histograma</span>
+      <canvas id="histogram" width="380" height="40"></canvas>
+    </div>
+  </div>
 
   <div id="thumb-row">
     <div id="empty-thumbs">Las fotos tomadas aparecerán aquí</div>
